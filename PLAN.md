@@ -117,18 +117,18 @@
 
 **Skills:** `backend-development`, `storage-adapter`, `elevenlabs-integration`, `billing-and-credits`, `test-driven-development`
 
-- [ ] `POST /recordings` (multipart upload)
-- [ ] `GET /recordings`, `PUT`, `DELETE`
-- [ ] `POST /voices` body `{ recordingId, label, kind: "ivc"|"pvc" }`
-  - [ ] Tier gate: Free → 403, Basic → IVC only, Pro+ → IVC or PVC
-  - [ ] Routes through `voice-ai.cloneVoice(userId, ...)`
-- [ ] `GET /voices`, `DELETE /voices/:id` (also deletes upstream)
-- [ ] `POST /voices/:id/generate` body `{ text, settings? }`
-  - [ ] Free: quote against `credits` table; Paid: rely on upstream metering
-- [ ] `POST /voices/:id/speech-to-speech` (Basic+)
-- [ ] `GET /generations`, `DELETE /generations/:id`
-- [ ] Rate limit middleware (Redis sliding window)
-- [ ] Per-user ownership enforced in every query
+- [x] `POST /recordings` (multipart upload)
+- [x] `GET /recordings`, `PUT`, `DELETE`
+- [x] `POST /voices` body `{ recordingId, label, kind: "ivc"|"pvc" }`
+  - [x] Tier gate: Free → 403, Basic → IVC only, Pro+ → IVC or PVC
+  - [x] Routes through `voice-ai.cloneVoice(userId, ...)`
+- [x] `GET /voices`, `DELETE /voices/:id` (also deletes upstream)
+- [x] `POST /voices/:id/generate` body `{ text, settings? }`
+  - [x] Free: quote against `credits` table; Paid: rely on upstream metering
+- [x] `POST /voices/:id/speech-to-speech` (Basic+)
+- [x] `GET /generations`, `DELETE /generations/:id`
+- [x] Rate limit middleware (Redis sliding window)
+- [x] Per-user ownership enforced in every query
 
 **Exit:** Verified user can record → (Basic+) clone → generate; tier gates enforced; Free user blocked from cloning.
 

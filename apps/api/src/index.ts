@@ -10,6 +10,7 @@ import files from "./routes/files";
 import creditsRoute from "./routes/credits";
 import recordingsRoute from "./routes/recordings";
 import voicesRoute from "./routes/voices";
+import generationsRoute from "./routes/generations";
 
 const app = new Hono();
 
@@ -23,6 +24,7 @@ app.route("/api/v1/files", files);
 app.route("/api/v1/credits", creditsRoute);
 app.route("/api/v1/recordings", recordingsRoute);
 app.route("/api/v1/voices", voicesRoute);
+app.route("/api/v1/generations", generationsRoute);
 
 logger.info({ port: env.PORT }, "VoiceLab API starting");
 
