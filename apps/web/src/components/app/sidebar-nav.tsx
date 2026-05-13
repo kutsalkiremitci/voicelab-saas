@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   AudioLines,
   CreditCard,
@@ -16,29 +17,31 @@ import { cn } from "@/lib/utils";
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   Icon: React.ElementType;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/app", label: "Dashboard", Icon: LayoutDashboard },
-  { href: "/app/text-to-speech", label: "Text to Speech", Icon: Volume2 },
-  { href: "/app/transcribe", label: "Speech to Text", Icon: Mic },
-  { href: "/app/voices", label: "Voice Clone", Icon: Layers },
-  { href: "/app/recordings", label: "Recordings", Icon: Folder },
-  { href: "/app/generations", label: "Generations", Icon: AudioLines },
-  { href: "/app/credits", label: "Credits", Icon: CreditCard },
-  { href: "/app/settings", label: "Settings", Icon: Settings },
+  { href: "/app", labelKey: "nav.dashboard", Icon: LayoutDashboard },
+  { href: "/app/text-to-speech", labelKey: "nav.textToSpeech", Icon: Volume2 },
+  { href: "/app/transcribe", labelKey: "nav.speechToText", Icon: Mic },
+  { href: "/app/voices", labelKey: "nav.voiceClone", Icon: Layers },
+  { href: "/app/recordings", labelKey: "nav.recordings", Icon: Folder },
+  { href: "/app/generations", labelKey: "nav.generations", Icon: AudioLines },
+  { href: "/app/credits", labelKey: "nav.credits", Icon: CreditCard },
+  { href: "/app/settings", labelKey: "nav.settings", Icon: Settings },
 ];
 
 export function SidebarNav({ collapsed = false }: { collapsed?: boolean }) {
+  const t = useTranslations();
   const pathname = usePathname();
 
   return (
     <nav className="mt-2 flex flex-col gap-0.5 text-sm">
-      {NAV_ITEMS.map(({ href, label, Icon }) => {
+      {NAV_ITEMS.map(({ href, labelKey, Icon }) => {
         const active =
           href === "/app" ? pathname === "/app" : pathname.startsWith(href);
+        const label = t(labelKey);
         return (
           <Link
             key={href}

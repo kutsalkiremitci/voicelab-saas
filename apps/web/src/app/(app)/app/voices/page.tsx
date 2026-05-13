@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useVoices, useDeleteVoice } from "@/hooks/use-voices";
 import { NewCloneDialog } from "@/components/app/new-clone-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { cn } from "@/lib/utils";
 
 export default function VoicesPage() {
+  const t = useTranslations();
   const auth = useAuth();
   const { data, isLoading } = useVoices();
   const del = useDeleteVoice();
@@ -19,54 +22,55 @@ export default function VoicesPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Breadcrumbs />
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Voices</h1>
-          <p className="text-sm text-muted-foreground">Select a voice to generate speech or convert audio.</p>
+          <h1 className="text-3xl font-semibold tracking-tight">{t("voices.title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("voices.sub")}</p>
         </div>
         <div className="flex gap-2">
           {canIvc ? (
             <NewCloneDialog
               kind="ivc"
-              trigger={<Button>New Quick Clone</Button>}
+              trigger={<Button>{t("voices.newQuickClone")}</Button>}
             />
           ) : (
             <Link
               href="/pricing"
               className={cn(buttonVariants({ variant: "outline" }))}
-              title="Upgrade to clone your voice"
+              title={t("voices.upgradeQuickHint")}
             >
-              Upgrade to clone
+              {t("voices.upgradeToClone")}
             </Link>
           )}
           {canPvc ? (
             <NewCloneDialog
               kind="pvc"
-              trigger={<Button variant="outline">New Studio Clone</Button>}
+              trigger={<Button variant="outline">{t("voices.newStudioClone")}</Button>}
             />
           ) : tier === "basic" ? (
             <Link
               href="/pricing"
               className={cn(buttonVariants({ variant: "ghost" }))}
-              title="Studio Voice Clone is on Pro"
+              title={t("voices.studioCloneHint")}
             >
-              Studio Clone (Pro)
+              {t("voices.studioClonePro")}
             </Link>
           ) : null}
         </div>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : data && data.voices.length > 0 ? (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-hidden rounded-2xl border border-border shadow-sm">
           <table className="w-full text-sm">
             <thead className="bg-muted text-xs uppercase text-muted-foreground">
               <tr>
-                <th className="px-3 py-2 text-left">Label</th>
-                <th className="px-3 py-2 text-left">Status</th>
-                <th className="px-3 py-2 text-left">Created</th>
-                <th className="px-3 py-2 text-right">Actions</th>
+                <th className="px-3 py-2 text-left">{t("voices.thLabel")}</th>
+                <th className="px-3 py-2 text-left">{t("voices.thStatus")}</th>
+                <th className="px-3 py-2 text-left">{t("voices.thCreated")}</th>
+                <th className="px-3 py-2 text-right">{t("voices.thActions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -82,7 +86,7 @@ export default function VoicesPage() {
                         v.status === "failed" && "bg-destructive/15 text-destructive",
                       )}
                     >
-                      {v.status}
+                      {t(`voices.status${v.status.charAt(0).toUpperCase() + v.status.slice(1)}`)}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
@@ -92,16 +96,19 @@ export default function VoicesPage() {
                     <div className="flex justify-end gap-2">
                       <Link
                         href={`/app/voices/${v.id}`}
-                        className={cn(buttonVariants({ size: "sm" }))}
+                        className={cn(
+                          buttonVariants({ size: "sm" }),
+                          "bg-accent text-accent-foreground hover:bg-accent/90",
+                        )}
                       >
-                        Generate
+                        {t("voices.generate")}
                       </Link>
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => del.mutate(v.id)}
                         disabled={del.isPending}
-                        aria-label="Delete voice"
+                        aria-label={t("voices.deleteVoice")}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -114,10 +121,8 @@ export default function VoicesPage() {
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          No voices yet.{" "}
-          {canIvc ? "Create your first clone above." : (
-            <>Upgrade to clone your voice — or wait for the voice library (coming soon).</>
-          )}
+          {t("voices.emptyNoVoices")}{" "}
+          {canIvc ? t("voices.emptyCreateFirst") : t("voices.emptyUpgradeOrLibrary")}
         </p>
       )}
     </div>

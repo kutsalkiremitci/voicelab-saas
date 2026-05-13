@@ -28,12 +28,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/use-auth";
 import { useCreditBalance } from "@/hooks/use-credits";
 import { useTtsModels } from "@/hooks/use-models";
 import { useLibraryVoices, type LibraryVoice } from "@/hooks/use-library";
 import { api, ApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { Breadcrumbs } from "@/components/app/breadcrumbs";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -108,7 +110,32 @@ const ALL_ACCENTS = [
 
 const CATEGORIES = ["professional", "generated", "cloned", "premade", "high_quality", "famous"];
 const GENDERS = ["male", "female", "neutral"];
-const AGES = ["young", "middle aged", "old"];
+const AGES = ["young", "middle_aged", "old"];
+
+function prettyLabel(s: string): string {
+  return s
+    .replace(/_/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function paginationRange(current: number, total: number): (number | "ellipsis")[] {
+  const c = current + 1;
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | "ellipsis")[] = [1];
+  if (c <= 3) {
+    out.push(2, 3);
+    if (total > 4) out.push("ellipsis");
+    out.push(total);
+  } else if (c >= total - 2) {
+    out.push("ellipsis", total - 2, total - 1, total);
+  } else {
+    out.push("ellipsis", c - 1, c, c + 1, "ellipsis", total);
+  }
+  return out;
+}
 
 const OUTPUT_FORMATS = [
   { value: "mp3_44100_128", label: "MP3 128 kbps", tiers: ["free", "basic", "pro", "enterprise"] },
@@ -274,8 +301,8 @@ function PreviewButton({ voice }: { voice: LibraryVoice }) {
     const audio = new Audio(`/api/v1/library/voices/${voice.voiceId}/preview`);
     audioRef.current = audio;
     audio.onended = () => setPlaying(false);
-    audio.oncanplaythrough = () => { setLoading(false); void audio.play(); setPlaying(true); };
-    audio.onerror = () => setLoading(false);
+    audio.oncanplay = () => { setLoading(false); void audio.play(); setPlaying(true); };
+    audio.onerror = () => { setLoading(false); audioRef.current = null; };
   }
 
   if (!voice.previewUrl) return null;
@@ -309,13 +336,20 @@ function VoiceItem({
   selected: boolean;
   onClick: () => void;
 }) {
-  const tags = [voice.accent, voice.useCase].filter(Boolean);
+  const tags = [voice.accent, voice.useCase].filter(Boolean).map(prettyLabel);
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+        "flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
         selected ? "bg-primary/10 ring-1 ring-inset ring-primary/30" : "hover:bg-muted",
       )}
     >
@@ -323,13 +357,13 @@ function VoiceItem({
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm font-medium">{voice.name}</p>
         {tags.length > 0 && (
-          <p className="truncate text-[10px] text-muted-foreground capitalize">
+          <p className="truncate text-[10px] text-muted-foreground">
             {tags.join(" · ")}
           </p>
         )}
       </div>
       <PreviewButton voice={voice} />
-    </button>
+    </div>
   );
 }
 
@@ -343,6 +377,7 @@ type Generation = {
 };
 
 export default function TextToSpeechPage() {
+  const t = useTranslations();
   const { data: authData } = useAuth();
   const tier = authData?.user.tier ?? "free";
   const qc = useQueryClient();
@@ -419,9 +454,13 @@ export default function TextToSpeechPage() {
   const voices = libraryData?.voices ?? [];
   const hasMore = libraryData?.hasMore ?? false;
   const totalCount = libraryData?.totalCount ?? null;
+  const totalPages = totalCount !== null && totalCount > 0
+    ? Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+    : null;
 
   const selectedModel = modelsData?.models.find((m) => m.modelId === modelId);
-  const maxLen = selectedModel?.maximumTextLengthPerRequest ?? 5000;
+  const modelMax = selectedModel?.maximumTextLengthPerRequest ?? 5000;
+  const maxLen = Math.min(5000, modelMax);
   const allowedFormats = OUTPUT_FORMATS.filter((f) =>
     (f.tiers as readonly string[]).includes(tier),
   );
@@ -475,12 +514,13 @@ export default function TextToSpeechPage() {
   const creditShortfall = creditBalance !== null && charCount > 0 && charCount > creditBalance;
 
   return (
-    <div className="flex -m-6 h-[calc(100vh-56px)] overflow-hidden">
+    <div className="flex -m-6 h-screen overflow-hidden">
       {/* ── Left: Editor ── */}
       <div className="flex flex-1 flex-col min-w-0 p-6 gap-4">
+        <Breadcrumbs />
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Text to Speech</h1>
+            <h1 className="text-xl font-semibold tracking-tight">{t("tts.title")}</h1>
             {selectedVoice ? (
               <div className="flex items-center gap-2 mt-0.5">
                 <VoiceAvatar name={selectedVoice.name} size="sm" />
@@ -495,7 +535,7 @@ export default function TextToSpeechPage() {
               </div>
             ) : (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Select a voice from the panel →
+                {t("tts.selectVoiceHint")}
               </p>
             )}
           </div>
@@ -506,7 +546,7 @@ export default function TextToSpeechPage() {
               className="flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <PanelRightOpen className="h-3.5 w-3.5" />
-              Browse voices
+              {t("tts.browseVoices")}
             </button>
           )}
         </div>
@@ -518,12 +558,12 @@ export default function TextToSpeechPage() {
               "flex-1 w-full resize-none rounded-xl border bg-background px-4 pt-3 pb-10 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               creditShortfall ? "border-destructive/60" : "border-input",
             )}
-            placeholder="Enter the text you want to convert to speech…"
+            placeholder={t("tts.textareaPlaceholder")}
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={maxLen}
           />
-          {/* Char count + credits bar */}
+          {/* Char count + cost preview bar */}
           <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between rounded-b-xl border-t border-inherit bg-muted/60 px-3 py-1.5 pointer-events-none">
             <span
               className={cn(
@@ -535,18 +575,32 @@ export default function TextToSpeechPage() {
                     : "text-muted-foreground",
               )}
             >
-              {charCount.toLocaleString()} chars
-              {charCount > maxLen && ` (max ${maxLen.toLocaleString()})`}
+              {charCount.toLocaleString()} {t("tts.chars")}
+              {charCount > 0 && (
+                <span className="ml-2 text-muted-foreground/70">
+                  · {t("tts.costsCredits", { n: charCount.toLocaleString() })}
+                </span>
+              )}
+              {charCount > maxLen && ` (${t("tts.max")} ${maxLen.toLocaleString()})`}
             </span>
             {creditBalance !== null && (
               <span
                 className={cn(
-                  "text-xs tabular-nums font-medium",
+                  "text-xs tabular-nums font-medium flex items-center gap-1.5",
                   creditShortfall ? "text-destructive" : "text-muted-foreground",
                 )}
               >
-                {creditShortfall && "⚠ "}
-                {creditBalance.toLocaleString()} credits
+                {creditShortfall && "⚠"}
+                <span>{creditBalance.toLocaleString()}</span>
+                {charCount > 0 && (
+                  <>
+                    <span className="opacity-60">→</span>
+                    <span className={cn(creditShortfall && "font-semibold")}>
+                      {(creditBalance - charCount).toLocaleString()}
+                    </span>
+                  </>
+                )}
+                <span className="opacity-60">{t("common.credits")}</span>
               </span>
             )}
           </div>
@@ -555,7 +609,7 @@ export default function TextToSpeechPage() {
         {/* Model + Format */}
         <div className="flex gap-3">
           <div className="flex-1 space-y-1">
-            <Label className="text-xs">Model</Label>
+            <Label className="text-xs">{t("tts.model")}</Label>
             <Select value={modelId} onValueChange={setModelId}>
               <SelectTrigger className="h-8 text-xs">
                 <SelectValue />
@@ -570,7 +624,7 @@ export default function TextToSpeechPage() {
             </Select>
           </div>
           <div className="flex-1 space-y-1">
-            <Label className="text-xs">Format</Label>
+            <Label className="text-xs">{t("tts.format")}</Label>
             <Select value={outputFormat} onValueChange={setOutputFormat}>
               <SelectTrigger className="h-8 text-xs">
                 <SelectValue />
@@ -590,7 +644,7 @@ export default function TextToSpeechPage() {
         <div className="flex items-center justify-end gap-4">
           {creditShortfall && (
             <p className="text-xs text-destructive">
-              Need {(charCount - creditBalance!).toLocaleString()} more credits
+              {t("tts.needMoreCredits", { n: (charCount - creditBalance!).toLocaleString() })}
             </p>
           )}
           <Button
@@ -605,7 +659,7 @@ export default function TextToSpeechPage() {
             className="gap-2"
           >
             {generate.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Generate Speech
+            {t("tts.generateSpeech")}
           </Button>
         </div>
 
@@ -646,7 +700,7 @@ export default function TextToSpeechPage() {
           {/* Panel header */}
           <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">Explore</span>
+              <span className="text-sm font-semibold">{t("tts.exploreTitle")}</span>
               {totalCount != null && (
                 <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
                   {totalCount.toLocaleString()}
@@ -668,7 +722,7 @@ export default function TextToSpeechPage() {
               <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <input
                 type="search"
-                placeholder="Search voices…"
+                placeholder={t("tts.searchVoicesPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full rounded-md border border-input bg-muted/40 pl-8 pr-3 py-1.5 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -680,7 +734,7 @@ export default function TextToSpeechPage() {
           <div className="border-b px-3 py-2.5 space-y-2 shrink-0">
             <div className="flex flex-wrap gap-1.5">
               <FilterDropdown
-                label="Language"
+                label={t("tts.filters.language")}
                 options={LANGUAGES.map((l) => ({ value: l.code, label: l.label }))}
                 selected={filterLanguages}
                 onChange={setFilterLanguages}
@@ -688,10 +742,10 @@ export default function TextToSpeechPage() {
               />
               {availableAccents.length > 0 && (
                 <FilterDropdown
-                  label="Accent"
+                  label={t("tts.filters.accent")}
                   options={availableAccents.map((a) => ({
                     value: a,
-                    label: a.charAt(0).toUpperCase() + a.slice(1),
+                    label: prettyLabel(a),
                   }))}
                   selected={filterAccents}
                   onChange={setFilterAccents}
@@ -699,20 +753,20 @@ export default function TextToSpeechPage() {
                 />
               )}
               <FilterDropdown
-                label="Category"
-                options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+                label={t("tts.filters.category")}
+                options={CATEGORIES.map((c) => ({ value: c, label: prettyLabel(c) }))}
                 selected={filterCategories}
                 onChange={setFilterCategories}
               />
               <FilterDropdown
-                label="Gender"
-                options={GENDERS.map((g) => ({ value: g, label: g }))}
+                label={t("tts.filters.gender")}
+                options={GENDERS.map((g) => ({ value: g, label: prettyLabel(g) }))}
                 selected={filterGenders}
                 onChange={setFilterGenders}
               />
               <FilterDropdown
-                label="Age"
-                options={AGES.map((a) => ({ value: a, label: a }))}
+                label={t("tts.filters.age")}
+                options={AGES.map((a) => ({ value: a, label: prettyLabel(a) }))}
                 selected={filterAges}
                 onChange={setFilterAges}
               />
@@ -724,7 +778,7 @@ export default function TextToSpeechPage() {
                 className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1"
               >
                 <X className="h-3 w-3" />
-                Clear all filters
+                {t("tts.clearAll")}
               </button>
             )}
           </div>
@@ -734,11 +788,11 @@ export default function TextToSpeechPage() {
             {isFetching && voices.length === 0 ? (
               <div className="flex items-center justify-center py-8 text-muted-foreground gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-xs">Loading…</span>
+                <span className="text-xs">{t("common.loading")}</span>
               </div>
             ) : voices.length === 0 ? (
               <p className="px-4 py-8 text-center text-xs text-muted-foreground">
-                No voices found.
+                {t("tts.noVoicesFound")}
               </p>
             ) : (
               <div
@@ -760,29 +814,60 @@ export default function TextToSpeechPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t px-3 py-2 shrink-0">
-            <span className="text-[10px] text-muted-foreground">
-              Page {page + 1}
-              {totalCount != null && ` · ${totalCount.toLocaleString()} voices`}
-            </span>
-            <div className="flex gap-1">
-              <button
-                type="button"
-                disabled={page === 0 || isFetching}
-                onClick={() => setPage((p) => p - 1)}
-                className="flex h-6 w-6 items-center justify-center rounded border text-muted-foreground hover:bg-muted disabled:opacity-40"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                disabled={!hasMore || isFetching}
-                onClick={() => setPage((p) => p + 1)}
-                className="flex h-6 w-6 items-center justify-center rounded border text-muted-foreground hover:bg-muted disabled:opacity-40"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+          <div className="flex items-center justify-between gap-1 border-t px-2 py-2 shrink-0">
+            <button
+              type="button"
+              disabled={page === 0 || isFetching}
+              onClick={() => setPage((p) => p - 1)}
+              aria-label="Previous page"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded border text-muted-foreground hover:bg-muted disabled:opacity-40"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+
+            {totalPages !== null ? (
+              <div className="flex flex-1 items-center justify-center gap-0.5">
+                {paginationRange(page, totalPages).map((item, i) =>
+                  item === "ellipsis" ? (
+                    <span
+                      key={`e${i}`}
+                      className="px-1 text-[11px] text-muted-foreground/60"
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={item}
+                      type="button"
+                      disabled={isFetching}
+                      onClick={() => setPage(item - 1)}
+                      className={cn(
+                        "min-w-[26px] h-7 px-1.5 rounded text-[11px] tabular-nums transition-colors",
+                        item - 1 === page
+                          ? "bg-primary text-primary-foreground font-medium"
+                          : "text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      {item}
+                    </button>
+                  ),
+                )}
+              </div>
+            ) : (
+              <span className="flex-1 text-center text-[10px] text-muted-foreground">
+                {t("tts.page")} {page + 1}
+              </span>
+            )}
+
+            <button
+              type="button"
+              disabled={!hasMore || isFetching}
+              onClick={() => setPage((p) => p + 1)}
+              aria-label="Next page"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded border text-muted-foreground hover:bg-muted disabled:opacity-40"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ export function NewCloneDialog({
   kind: "ivc" | "pvc";
   trigger: React.ReactNode;
 }) {
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [recordingId, setRecordingId] = useState<string>("");
   const [label, setLabel] = useState("");
@@ -35,11 +37,11 @@ export function NewCloneDialog({
 
   async function handleSubmit() {
     if (!recordingId) {
-      toast.error("Pick a recording first.");
+      toast.error(t("voices.dialog.errPickRecording"));
       return;
     }
     if (label.trim().length === 0) {
-      toast.error("Give the voice a label.");
+      toast.error(t("voices.dialog.errPickLabel"));
       return;
     }
     setSubmitting(true);
@@ -49,7 +51,7 @@ export function NewCloneDialog({
         label: label.trim(),
         kind,
       });
-      toast.success("Voice created.");
+      toast.success(t("voices.dialog.voiceCreated"));
       setOpen(false);
       setLabel("");
       setRecordingId("");
@@ -59,18 +61,19 @@ export function NewCloneDialog({
           ? (e.payload as { error?: { code?: string } })?.error?.code
           : null;
       if (code === "TIER_LIMIT") {
-        toast.error("Upgrade your tier to use this clone type.");
+        toast.error(t("voices.dialog.errTierLimit"));
       } else if (code === "LABEL_TAKEN") {
-        toast.error("You already have a voice with this label.");
+        toast.error(t("voices.dialog.errLabelTaken"));
       } else {
-        toast.error("Could not create voice.");
+        toast.error(t("voices.dialog.errGeneric"));
       }
     } finally {
       setSubmitting(false);
     }
   }
 
-  const title = kind === "ivc" ? "New Quick Clone" : "New Studio Clone";
+  const title = kind === "ivc" ? t("voices.dialog.titleIvc") : t("voices.dialog.titlePvc");
+  const desc = kind === "ivc" ? t("voices.dialog.descIvc") : t("voices.dialog.descPvc");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -78,16 +81,12 @@ export function NewCloneDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            {kind === "ivc"
-              ? "Pick a 1-5 minute recording. Same tone throughout works best."
-              : "Pick a longer studio-grade recording (30+ minutes optimal)."}
-          </DialogDescription>
+          <DialogDescription>{desc}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="rec">Source recording</Label>
+            <Label htmlFor="rec">{t("voices.dialog.sourceLabel")}</Label>
             {recs && recs.recordings.length > 0 ? (
               <select
                 id="rec"
@@ -95,7 +94,7 @@ export function NewCloneDialog({
                 onChange={(e) => setRecordingId(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="">Choose…</option>
+                <option value="">{t("voices.dialog.choose")}</option>
                 {recs.recordings.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.name} ({Math.round(r.durationSec)}s)
@@ -103,16 +102,14 @@ export function NewCloneDialog({
                 ))}
               </select>
             ) : (
-              <p className="text-xs text-muted-foreground">
-                No recordings yet. Record one in the studio first.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("voices.dialog.noRecordings")}</p>
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="label">Label</Label>
+            <Label htmlFor="label">{t("voices.dialog.label")}</Label>
             <Input
               id="label"
-              placeholder="Calm, Storyteller, Energetic…"
+              placeholder={t("voices.dialog.labelPlaceholder")}
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               maxLength={40}
@@ -122,10 +119,10 @@ export function NewCloneDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={submitting}>
-            Cancel
+            {t("voices.dialog.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={submitting || !recs?.recordings.length}>
-            {submitting ? "Creating…" : "Create voice"}
+            {submitting ? t("voices.dialog.creating") : t("voices.dialog.create")}
           </Button>
         </DialogFooter>
       </DialogContent>

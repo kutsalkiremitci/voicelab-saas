@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useGenerations, useDeleteGeneration } from "@/hooks/use-generations";
 import { useVoices } from "@/hooks/use-voices";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/app/breadcrumbs";
 
 export default function GenerationsPage() {
   const [voiceId, setVoiceId] = useState<string>("");
@@ -14,6 +15,7 @@ export default function GenerationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <Breadcrumbs />
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Generations</h1>
         <p className="text-sm text-muted-foreground">All audio you&apos;ve generated.</p>
