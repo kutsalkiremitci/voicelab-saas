@@ -247,6 +247,12 @@
     "settings": "Ayarlar",
     "collapse": "Daralt"
   },
+  "confirm": {
+    "defaultTitle": "Emin misin?",
+    "defaultDescription": "Bu işlem geri alınamaz.",
+    "cancel": "Vazgeç",
+    "confirm": "Onayla"
+  },
   "usage": {
     "title": "Kullanım",
     "sub": "Hesabındaki tüm kredi düşümleri ve eklemeleri, en yeniden eskiye.",
@@ -366,6 +372,10 @@
     "countMany": "kayıt",
     "emptyTitle": "Henüz kayıt yok",
     "emptyBody": "İlk örneğini yakalamak için yukarıdaki mikrofona bas.",
+    "download": "İndir",
+    "delete": "Sil",
+    "confirmTitle": "Kaydı sil?",
+    "confirmBody": "\"{name}\" kütüphaneden silinecek. Geri alınamaz.",
     "confirmDelete": "Onaylamak için tekrar tıkla"
   },
   "credits": {
@@ -514,6 +524,7 @@
       "statWords": "Kelime",
       "statSpeakers": "Konuşmacı",
       "delete": "Transkripsiyonu sil",
+      "confirmTitle": "Transkripsiyonu sil?",
       "audioMissingTitle": "Ses dosyası bulunamadı",
       "audioMissingBody": "Bu transkripte ait kayıtlı ses yüklenemedi. Metin sağlam ama oynatma ve PDF/DOCX dışa aktarımı çalışmaz. Bu kaydı silip dosyayı tekrar yükle.",
       "confirmDelete": "Bu transkripsiyonu sil? Geri alınamaz.",
@@ -536,6 +547,8 @@
       "empty": "Henüz transkripsiyon yok.",
       "createFirst": "İlk transkripsiyonu oluştur",
       "confirmDelete": "Bu transkripsiyonu sil?",
+      "confirmTitle": "Transkripsiyonu sil?",
+      "confirmBody": "\"{name}\" ve sesi kalıcı olarak silinecek. Geri alınamaz.",
       "deleted": "Transkripsiyon silindi.",
       "deleteFailed": "Transkripsiyon silinemedi.",
       "delete": "Sil",
@@ -561,6 +574,8 @@
     "thActions": "İşlemler",
     "generate": "Üret",
     "deleteVoice": "Sesi sil",
+    "confirmTitle": "Sesi sil?",
+    "confirmBody": "\"{name}\" kütüphaneden ve upstream hesabından silinecek. Bu sesi kullanan tüm üretimler kaynağını kaybeder. Geri alınamaz.",
     "statusReady": "hazır",
     "statusPending": "bekliyor",
     "statusFailed": "başarısız",

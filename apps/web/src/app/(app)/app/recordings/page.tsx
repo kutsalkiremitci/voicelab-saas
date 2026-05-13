@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Clock, FileAudio, HardDrive, Mic, Trash2, Upload } from "lucide-react";
-import { useRecordings, useDeleteRecording } from "@/hooks/use-recordings";
+import { Clock, Download, FileAudio, HardDrive, Mic, Trash2, Upload } from "lucide-react";
+import { useRecordings, useDeleteRecording, type Recording } from "@/hooks/use-recordings";
 import { RecordingPanel } from "@/components/studio/recording-panel";
 import { RecordingUploadCard } from "@/components/studio/recording-upload-card";
-import { Button } from "@/components/ui/button";
+import { AudioPlayer } from "@/components/ui/audio-player";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { cn } from "@/lib/utils";
 
@@ -38,14 +39,32 @@ function formatRelative(iso: string): string {
   return date.toLocaleDateString();
 }
 
+function extForMime(mime: string): string {
+  if (mime.includes("webm")) return "webm";
+  if (mime.includes("mp3") || mime.includes("mpeg")) return "mp3";
+  if (mime.includes("wav")) return "wav";
+  if (mime.includes("ogg")) return "ogg";
+  if (mime.includes("mp4") || mime.includes("m4a")) return "m4a";
+  if (mime.includes("flac")) return "flac";
+  if (mime.includes("opus")) return "opus";
+  if (mime.includes("aac")) return "aac";
+  return "audio";
+}
+
 export default function RecordingsPage() {
   const t = useTranslations();
   const { data, isLoading } = useRecordings();
   const del = useDeleteRecording();
-  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<Recording | null>(null);
   const [source, setSource] = useState<Source>("record");
 
   const recordings = data?.recordings ?? [];
+
+  async function doDelete() {
+    if (!confirm) return;
+    await del.mutateAsync(confirm.id);
+    setConfirm(null);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,9 +118,9 @@ export default function RecordingsPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-32 animate-pulse rounded-xl border bg-muted/30" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-44 animate-pulse rounded-2xl border bg-muted/30" />
             ))}
           </div>
         ) : recordings.length === 0 ? (
@@ -115,73 +134,82 @@ export default function RecordingsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {recordings.map((r) => {
-              const isPendingDelete = pendingDelete === r.id;
-              return (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {recordings.map((r) => (
+              <div
+                key={r.id}
+                className="group relative flex flex-col gap-3 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md"
+              >
                 <div
-                  key={r.id}
-                  className="group relative flex flex-col gap-3 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div
-                    className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-accent/[0.06] blur-2xl opacity-0 transition-opacity group-hover:opacity-100"
-                    aria-hidden
-                  />
-                  <div className="relative flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                        <FileAudio className="h-4 w-4" />
-                      </div>
+                  className="pointer-events-none absolute -right-12 -top-12 h-28 w-28 rounded-full bg-accent/[0.08] blur-2xl opacity-0 transition-opacity group-hover:opacity-100"
+                  aria-hidden
+                />
+
+                <div className="relative flex items-start justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                      <FileAudio className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
                       <p className="truncate text-sm font-medium" title={r.name}>
                         {r.name}
                       </p>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                        {r.mimeType.replace(/^audio\//, "")}
+                      </p>
                     </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => {
-                        if (isPendingDelete) {
-                          del.mutate(r.id);
-                          setPendingDelete(null);
-                        } else {
-                          setPendingDelete(r.id);
-                          setTimeout(() => setPendingDelete((id) => (id === r.id ? null : id)), 3000);
-                        }
-                      }}
-                      disabled={del.isPending}
-                      aria-label={isPendingDelete ? "Confirm delete" : "Delete recording"}
-                      className={cn(
-                        "h-7 w-7 shrink-0",
-                        isPendingDelete && "bg-destructive/10 text-destructive hover:bg-destructive/20",
-                      )}
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1">
+                    <a
+                      href={r.url}
+                      download={`${r.name.replace(/[^\w.-]/g, "_")}.${extForMime(r.mimeType)}`}
+                      title={t("recordings.download")}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setConfirm(r)}
+                      title={t("recordings.delete")}
+                      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    </button>
                   </div>
-
-                  <audio src={r.url} controls className="h-8 w-full" />
-
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground tabular-nums">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {formatDuration(r.durationSec)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <HardDrive className="h-3 w-3" />
-                      {formatBytes(r.sizeBytes)}
-                    </span>
-                    <span className="ml-auto">{formatRelative(r.createdAt)}</span>
-                  </div>
-
-                  {isPendingDelete && (
-                    <p className="text-[10px] text-destructive">{t("recordings.confirmDelete")}</p>
-                  )}
                 </div>
-              );
-            })}
+
+                <AudioPlayer src={r.url} initialDuration={r.durationSec} />
+
+                <div className="flex items-center gap-3 text-[11px] tabular-nums text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {formatDuration(r.durationSec)}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <HardDrive className="h-3 w-3" />
+                    {formatBytes(r.sizeBytes)}
+                  </span>
+                  <span className="ml-auto">{formatRelative(r.createdAt)}</span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(o) => !o && setConfirm(null)}
+        title={t("recordings.confirmTitle")}
+        description={
+          confirm ? t("recordings.confirmBody", { name: confirm.name }) : undefined
+        }
+        confirmLabel={t("recordings.delete")}
+        loading={del.isPending}
+        onConfirm={doDelete}
+      />
     </div>
   );
 }

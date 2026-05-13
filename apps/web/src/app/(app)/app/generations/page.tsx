@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { useGenerations, useDeleteGeneration } from "@/hooks/use-generations";
+import { useGenerations, useDeleteGeneration, type Generation } from "@/hooks/use-generations";
 import { useVoices } from "@/hooks/use-voices";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 
 export default function GenerationsPage() {
@@ -12,6 +13,7 @@ export default function GenerationsPage() {
   const { data, isLoading } = useGenerations(voiceId ? { voiceId } : undefined);
   const { data: voices } = useVoices();
   const del = useDeleteGeneration();
+  const [confirm, setConfirm] = useState<Generation | null>(null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -69,7 +71,7 @@ export default function GenerationsPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => del.mutate(g.id)}
+                        onClick={() => setConfirm(g)}
                         disabled={del.isPending}
                         aria-label="Delete generation"
                       >
@@ -85,6 +87,24 @@ export default function GenerationsPage() {
       ) : (
         <p className="text-sm text-muted-foreground">No generations yet.</p>
       )}
+
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(o) => !o && setConfirm(null)}
+        title="Delete generation?"
+        description={
+          confirm
+            ? `The generated audio will be removed permanently. This cannot be undone.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        loading={del.isPending}
+        onConfirm={async () => {
+          if (!confirm) return;
+          await del.mutateAsync(confirm.id);
+          setConfirm(null);
+        }}
+      />
     </div>
   );
 }

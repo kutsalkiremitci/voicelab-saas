@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useVoices, useDeleteVoice } from "@/hooks/use-voices";
+import { useVoices, useDeleteVoice, type Voice } from "@/hooks/use-voices";
 import { NewCloneDialog } from "@/components/app/new-clone-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +17,7 @@ export default function VoicesPage() {
   const auth = useAuth();
   const { data, isLoading } = useVoices();
   const del = useDeleteVoice();
+  const [confirm, setConfirm] = useState<Voice | null>(null);
 
   const tier = auth.data?.user.tier;
   const canIvc = tier === "basic" || tier === "pro" || tier === "enterprise";
@@ -106,7 +109,7 @@ export default function VoicesPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => del.mutate(v.id)}
+                        onClick={() => setConfirm(v)}
                         disabled={del.isPending}
                         aria-label={t("voices.deleteVoice")}
                       >
@@ -125,6 +128,20 @@ export default function VoicesPage() {
           {canIvc ? t("voices.emptyCreateFirst") : t("voices.emptyUpgradeOrLibrary")}
         </p>
       )}
+
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(o) => !o && setConfirm(null)}
+        title={t("voices.confirmTitle")}
+        description={confirm ? t("voices.confirmBody", { name: confirm.label }) : undefined}
+        confirmLabel={t("voices.deleteVoice")}
+        loading={del.isPending}
+        onConfirm={async () => {
+          if (!confirm) return;
+          await del.mutateAsync(confirm.id);
+          setConfirm(null);
+        }}
+      />
     </div>
   );
 }

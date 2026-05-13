@@ -1,13 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { FileAudio, Mic, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
-import { useTranscriptions, useDeleteTranscription } from "@/hooks/use-transcriptions";
+import {
+  useTranscriptions,
+  useDeleteTranscription,
+  type Transcription,
+} from "@/hooks/use-transcriptions";
 import { formatDuration } from "@/lib/audio-duration";
 
 export default function TranscriptionsHistoryPage() {
@@ -15,16 +21,19 @@ export default function TranscriptionsHistoryPage() {
   const router = useRouter();
   const { data, isLoading } = useTranscriptions();
   const del = useDeleteTranscription();
+  const [confirm, setConfirm] = useState<Transcription | null>(null);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm(t("transcribe.history.confirmDelete"))) return;
+  async function doDelete() {
+    if (!confirm) return;
     try {
-      await del.mutateAsync(id);
+      await del.mutateAsync(confirm.id);
       toast.success(t("transcribe.history.deleted"));
     } catch {
       toast.error(t("transcribe.history.deleteFailed"));
+    } finally {
+      setConfirm(null);
     }
-  };
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,7 +105,7 @@ export default function TranscriptionsHistoryPage() {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => handleDelete(row.id)}
+                      onClick={() => setConfirm(row)}
                       aria-label={t("transcribe.history.delete")}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -108,6 +117,18 @@ export default function TranscriptionsHistoryPage() {
           </table>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(o) => !o && setConfirm(null)}
+        title={t("transcribe.history.confirmTitle")}
+        description={
+          confirm ? t("transcribe.history.confirmBody", { name: confirm.fileName }) : undefined
+        }
+        confirmLabel={t("transcribe.history.delete")}
+        loading={del.isPending}
+        onConfirm={doDelete}
+      />
     </div>
   );
 }

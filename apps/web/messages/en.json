@@ -247,6 +247,12 @@
     "settings": "Settings",
     "collapse": "Collapse"
   },
+  "confirm": {
+    "defaultTitle": "Are you sure?",
+    "defaultDescription": "This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
   "usage": {
     "title": "Usage",
     "sub": "Every credit charge and grant on your account, oldest at the bottom.",
@@ -366,6 +372,10 @@
     "countMany": "recordings",
     "emptyTitle": "No recordings yet",
     "emptyBody": "Hit the mic above to capture your first sample.",
+    "download": "Download",
+    "delete": "Delete",
+    "confirmTitle": "Delete recording?",
+    "confirmBody": "\"{name}\" will be removed from your library. This cannot be undone.",
     "confirmDelete": "Click again to confirm"
   },
   "credits": {
@@ -514,6 +524,7 @@
       "statWords": "Words",
       "statSpeakers": "Speakers",
       "delete": "Delete transcription",
+      "confirmTitle": "Delete transcription?",
       "audioMissingTitle": "Audio file is missing",
       "audioMissingBody": "The stored audio for this transcript could not be loaded. The transcript text is intact but playback and PDF/DOCX export will not work. Delete this entry and re-upload the file.",
       "confirmDelete": "Delete this transcription? This cannot be undone.",

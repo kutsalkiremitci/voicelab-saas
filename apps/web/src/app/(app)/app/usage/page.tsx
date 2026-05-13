@@ -14,8 +14,9 @@ import {
   X,
   ShieldCheck,
 } from "lucide-react";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCreditTransactions, type CreditTxOperation, type CreditTxType } from "@/hooks/use-credit-transactions";
@@ -35,6 +36,8 @@ function opMeta(op: CreditTxOperation) {
 
 export default function UsagePage() {
   const t = useTranslations();
+  const localeRaw = useLocale();
+  const locale: "en" | "tr" = localeRaw === "tr" ? "tr" : "en";
   const [opFilter, setOpFilter] = useState<CreditTxOperation[]>([]);
   const [typeFilter, setTypeFilter] = useState<CreditTxType | undefined>(undefined);
   const [from, setFrom] = useState<string>("");
@@ -166,20 +169,22 @@ export default function UsagePage() {
           </PopoverContent>
         </Popover>
 
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
           <span>{t("usage.filters.from")}</span>
-          <Input
-            type="date"
+          <DatePicker
             value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            className="h-7 w-36 text-xs"
+            onChange={setFrom}
+            placeholder={t("usage.filters.from")}
+            max={to || undefined}
+            locale={locale}
           />
           <span>{t("usage.filters.to")}</span>
-          <Input
-            type="date"
+          <DatePicker
             value={to}
-            onChange={(e) => setTo(e.target.value)}
-            className="h-7 w-36 text-xs"
+            onChange={setTo}
+            placeholder={t("usage.filters.to")}
+            min={from || undefined}
+            locale={locale}
           />
         </div>
 

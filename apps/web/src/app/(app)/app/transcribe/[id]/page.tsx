@@ -19,6 +19,7 @@ import {
   Edit3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { TranscriptTimeline } from "@/components/transcribe/transcript-timeline";
 import { ExportMenu } from "@/components/transcribe/export-menu";
@@ -49,6 +50,7 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [audioMissing, setAudioMissing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [text, setText] = useState<string>("");
   const [words, setWords] = useState<TranscribedWord[]>([]);
@@ -161,7 +163,6 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
 
   const handleDelete = async () => {
     if (!data) return;
-    if (!window.confirm(t("transcribe.viewer.confirmDelete"))) return;
     try {
       await del.mutateAsync(data.transcription.id);
       toast.success(t("transcribe.viewer.deleted"));
@@ -229,7 +230,7 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
               variant="ghost"
               size="icon"
               className="h-9 w-9 text-muted-foreground hover:text-destructive"
-              onClick={handleDelete}
+              onClick={() => setConfirmDelete(true)}
               aria-label={t("transcribe.viewer.delete")}
             >
               <Trash2 className="h-4 w-4" />
@@ -273,7 +274,7 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
               <p className="font-medium">{t("transcribe.viewer.audioMissingTitle")}</p>
               <p className="text-destructive/80">{t("transcribe.viewer.audioMissingBody")}</p>
             </div>
-            <Button variant="destructive" size="sm" className="h-8 gap-1.5" onClick={handleDelete}>
+            <Button variant="destructive" size="sm" className="h-8 gap-1.5" onClick={() => setConfirmDelete(true)}>
               <Trash2 className="h-3 w-3" />
               {t("transcribe.viewer.delete")}
             </Button>
@@ -330,6 +331,19 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
         onWordsChange={setWords}
         onSpeakerRename={(speakerId, name) => {
           setSpeakerNames((prev) => ({ ...prev, [speakerId]: name }));
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={t("transcribe.viewer.confirmTitle")}
+        description={t("transcribe.viewer.confirmDelete")}
+        confirmLabel={t("transcribe.viewer.delete")}
+        loading={del.isPending}
+        onConfirm={async () => {
+          await handleDelete();
+          setConfirmDelete(false);
         }}
       />
     </div>
