@@ -6,6 +6,7 @@ dist/
 .next/
 .turbo/
 out/
+*.tsbuildinfo
 
 # Bun
 bun-debug-*

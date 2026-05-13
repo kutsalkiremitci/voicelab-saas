@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AppTopbar } from "@/components/app/topbar";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
@@ -30,9 +31,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </nav>
       </aside>
       <div className="flex flex-col">
-        <header className="flex h-14 items-center justify-end border-b border-border px-4 text-sm text-muted-foreground">
-          <span>Credits: —</span>
-        </header>
+        <AppTopbar />
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>

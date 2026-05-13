@@ -176,18 +176,18 @@
 
 **Skills:** `frontend-development`, `email-and-verification`, `test-driven-development`
 
-- [ ] `/register` page — email + password + confirm
-  - [ ] On success → redirect to `/verify-email`
-- [ ] `/verify-email` page — "Check your inbox" + resend button
-  - [ ] Resend button calls `POST /auth/resend-verification`
-  - [ ] Rate-limit feedback ("wait 60s" if 429)
-- [ ] `/verify?token=...` page — handles the GET, shows success/failure UI, redirects to `/app` on success
-- [ ] `/login` page
-  - [ ] On 403 `ACCOUNT_UNVERIFIED` → redirect to `/verify-email`
-  - [ ] On 403 `ACCOUNT_SUSPENDED` → inline error
-  - [ ] On 200 → redirect to `/app`
-- [ ] `/login?verified=1` shows a success banner
-- [ ] Logout button in topbar
+- [x] `/register` page — email + password + confirm
+  - [x] On success → redirect to `/verify-email`
+- [x] `/verify-email` page — "Check your inbox" + resend button
+  - [x] Resend button calls `POST /auth/resend-verification`
+  - [x] Rate-limit feedback ("wait 60s" if 429)
+- [x] `/verify?token=...` page — handles the GET, shows success/failure UI, redirects to `/app` on success
+- [x] `/login` page
+  - [x] On 403 `ACCOUNT_UNVERIFIED` → redirect to `/verify-email`
+  - [x] On 403 `ACCOUNT_SUSPENDED` → inline error
+  - [x] On 200 → redirect to `/app`
+- [x] `/login?verified=1` shows a success banner
+- [x] Logout button in topbar
 
 **Exit:** Full register → email → click → app flow works.
 
