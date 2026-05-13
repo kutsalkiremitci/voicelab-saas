@@ -386,7 +386,7 @@ export default function TextToSpeechPage() {
 
   // Panel state
   const [panelOpen, setPanelOpen] = useState(true);
-  const [panelWidth, setPanelWidth] = useState(340);
+  const [panelWidth, setPanelWidth] = useState(MAX_PANEL_W);
   const [isDragging, setIsDragging] = useState(false);
 
   // Drag-resize
