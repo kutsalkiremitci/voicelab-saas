@@ -100,14 +100,14 @@
 
 **Skills:** `billing-and-credits`, `backend-development`, `test-driven-development`
 
-- [ ] `credits` table migration applied (one row per Free user)
-- [ ] `FreeCreditsService`:
-  - [ ] `getBalance(userId)`
-  - [ ] `charge(userId, amount, reason, metadata)` (transactional, ON UPDATE no negative)
-  - [ ] `quote(operation, payload)` (pure)
-- [ ] On `GET /auth/verify` success → grant 1,000 credits row (insert-or-skip if exists)
-- [ ] Free users hit 402 with `INSUFFICIENT_CREDITS` when balance is below quote amount
-- [ ] Routes: `GET /credits/balance` returns `{ balance, plan, source: "free"|"upstream" }`
+- [x] `credits` table migration applied (one row per Free user)
+- [x] `FreeCreditsService`:
+  - [x] `getBalance(userId)`
+  - [x] `charge(userId, amount, reason, metadata)` (transactional, ON UPDATE no negative)
+  - [x] `quote(operation, payload)` (pure)
+- [x] On `GET /auth/verify` success → grant 1,000 credits row (insert-or-skip if exists)
+- [x] Free users hit 402 with `INSUFFICIENT_CREDITS` when balance is below quote amount
+- [x] Routes: `GET /credits/balance` returns `{ balance, plan, source: "free"|"upstream" }`
 
 **Exit:** Free user can spend down to 0; 1001st character is rejected; Paid user sees upstream-derived balance.
 
