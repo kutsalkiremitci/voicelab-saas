@@ -79,18 +79,18 @@
 
 **Skills:** `elevenlabs-integration`, `backend-development`, `test-driven-development`
 
-- [ ] `bun add @elevenlabs/elevenlabs-js`
-- [ ] Service module `apps/api/src/services/voice-ai.ts`:
-  - [ ] `getClientForUser(userId)` — decrypts user's key, returns scoped `ElevenLabsClient`
-  - [ ] For Free users: returns client backed by `ELEVENLABS_DEMO_API_KEY`
-  - [ ] `cloneVoice(userId, name, files, kind)` — IVC for Basic+, PVC for Pro+
-  - [ ] `generateSpeech(userId, voiceId, text, settings)` — TTS hot path
-  - [ ] `speechToSpeech(userId, voiceId, audioFile, settings)` — voice conversion
-  - [ ] `deleteVoice(userId, voiceId)`
-  - [ ] `getSubscriptionForUser(userId)` (Redis 60s cache per user)
-- [ ] Retry on TTS / S2S (3 attempts, skip on 401/402/422)
-- [ ] `VoiceAIError` class + boundary wrapper
-- [ ] Test mocks under `apps/api/test/mocks/voice-ai.ts`
+- [x] `bun add @elevenlabs/elevenlabs-js`
+- [x] Service module `apps/api/src/services/voice-ai.ts`:
+  - [x] `getClientForUser(userId)` — decrypts user's key, returns scoped `ElevenLabsClient`
+  - [x] For Free users: returns client backed by `ELEVENLABS_DEMO_API_KEY`
+  - [x] `cloneVoice(userId, name, files, kind)` — IVC for Basic+, PVC for Pro+
+  - [x] `generateSpeech(userId, voiceId, text, settings)` — TTS hot path
+  - [x] `speechToSpeech(userId, voiceId, audioFile, settings)` — voice conversion
+  - [x] `deleteVoice(userId, voiceId)`
+  - [x] `getSubscriptionForUser(userId)` (Redis 60s cache per user)
+- [x] Retry on TTS / S2S (3 attempts, skip on 401/402/422)
+- [x] `VoiceAIError` class + boundary wrapper
+- [x] Test mocks under `apps/api/test/mocks/voice-ai.ts`
 
 **Exit:** Service routes calls through the right key per user; mocked in tests.
 
