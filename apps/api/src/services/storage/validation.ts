@@ -9,9 +9,28 @@ export const ALLOWED_AUDIO_MIMES = [
   "audio/x-wav",
   "audio/wave",
   "audio/ogg",
+  "audio/opus",
   "audio/mp4",
   "audio/x-m4a",
+  "audio/aac",
+  "audio/flac",
+  "audio/x-flac",
 ] as const;
+
+/**
+ * Browsers / OSes label the same audio container with wildly inconsistent
+ * MIME types. Map every variant we've seen in the wild back to a known
+ * member of ALLOWED_AUDIO_MIMES before we compare. This is conservative:
+ * file-type magic-byte detection still has the final say further down.
+ */
+function normalizeAudioMime(raw: string): string {
+  const m = raw.toLowerCase().split(";")[0]!.trim();
+  if (m === "video/webm") return "audio/webm";
+  if (m === "application/ogg" || m === "audio/x-ogg" || m === "audio/vorbis") return "audio/ogg";
+  if (m === "audio/m4a") return "audio/x-m4a";
+  if (m === "audio/x-aac") return "audio/aac";
+  return m;
+}
 
 export const ALLOWED_MEDIA_MIMES = [
   ...ALLOWED_AUDIO_MIMES,
@@ -55,10 +74,15 @@ export async function validateAudio(input: {
   buffer: Buffer;
   declaredMime: string;
 }): Promise<ValidatedAudio> {
-  // Browser MediaRecorder labels audio-only WebM recordings as video/webm
-  const raw = input.declaredMime.toLowerCase();
-  const declared = raw === "video/webm" ? "audio/webm" : raw;
-  if (!ALLOWED_AUDIO_MIMES.includes(declared as (typeof ALLOWED_AUDIO_MIMES)[number])) {
+  // The browser-declared MIME is a hint only; magic-byte detection is the
+  // authority. We still do an early reject if the hint is clearly something
+  // we don't accept (e.g. an image), but normalize permissively first so an
+  // .ogg picked from the OS (often labelled `application/ogg`) doesn't get
+  // rejected before file-type even runs.
+  const declared = normalizeAudioMime(input.declaredMime);
+  const declaredObviouslyWrong =
+    declared.startsWith("image/") || declared.startsWith("text/") || declared === "application/pdf";
+  if (declaredObviouslyWrong) {
     throw new AppError("INVALID_FILE", `Disallowed content type: ${declared}`, 400);
   }
 
@@ -73,8 +97,7 @@ export async function validateAudio(input: {
   if (!detected) {
     throw new AppError("INVALID_FILE", "Unrecognized binary signature", 400);
   }
-  // file-type library reports audio-only WebM as video/webm — normalize same as declared MIME
-  const detectedMime = detected.mime === "video/webm" ? "audio/webm" : detected.mime;
+  const detectedMime = normalizeAudioMime(detected.mime);
   if (!ALLOWED_AUDIO_MIMES.includes(detectedMime as (typeof ALLOWED_AUDIO_MIMES)[number])) {
     throw new AppError(
       "INVALID_FILE",
@@ -106,7 +129,7 @@ export async function validateMedia(input: {
   if (!detected) {
     throw new AppError("INVALID_AUDIO", "Unrecognized binary signature", 400);
   }
-  const detectedMime = detected.mime.toLowerCase();
+  const detectedMime = normalizeAudioMime(detected.mime);
   if (!ALLOWED_MEDIA_MIMES.includes(detectedMime as (typeof ALLOWED_MEDIA_MIMES)[number])) {
     throw new AppError("INVALID_AUDIO", `Unsupported media type: ${detectedMime}`, 400);
   }
