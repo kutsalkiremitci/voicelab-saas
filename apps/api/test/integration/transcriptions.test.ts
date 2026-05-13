@@ -49,7 +49,7 @@ async function makeUser(opts: {
     .returning({ id: users.id });
   const userId = u!.id;
   const sid = await createSession(userId);
-  if (opts.tier === "free" && opts.balance !== undefined) {
+  if (opts.balance !== undefined) {
     await db.insert(credits).values({ userId, balance: opts.balance });
   }
   const entry = { userId, sid };
@@ -140,16 +140,30 @@ describe("POST /transcriptions (transcribe)", () => {
     expect(body.error.details.deficit).toBeGreaterThan(0);
   });
 
-  test("Basic user: 201 with no credits row", async () => {
-    const { sid, userId } = await makeUser({ tier: "basic" });
+  test("Basic user: charged from credits pool (no free STT)", async () => {
+    const { sid, userId } = await makeUser({ tier: "basic", balance: 1000 });
     const res = await app.request("/api/v1/transcriptions", {
       method: "POST",
       headers: { Cookie: `voicelab_session=${sid}` },
-      body: buildForm(),
+      body: buildForm({ durationSec: "2" }),
     });
     expect(res.status).toBe(201);
+    const body = (await res.json()) as { transcription: { creditsCharged: number | null } };
+    expect(body.transcription.creditsCharged).toBe(1);
     const credit = await db.query.credits.findFirst({ where: eq(credits.userId, userId) });
-    expect(credit).toBeUndefined();
+    expect(credit?.balance).toBe(999);
+  });
+
+  test("Basic user with no credits row: 402 INSUFFICIENT_CREDITS", async () => {
+    const { sid } = await makeUser({ tier: "basic" });
+    const res = await app.request("/api/v1/transcriptions", {
+      method: "POST",
+      headers: { Cookie: `voicelab_session=${sid}` },
+      body: buildForm({ durationSec: "120" }),
+    });
+    expect(res.status).toBe(402);
+    const body = (await res.json()) as { error: { code: string } };
+    expect(body.error.code).toBe("INSUFFICIENT_CREDITS");
   });
 
   test("includeSubtitles preference is persisted in options", async () => {

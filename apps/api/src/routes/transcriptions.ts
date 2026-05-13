@@ -183,7 +183,8 @@ route.post("/", TRANSCRIBE_RATE_LIMIT, async (c) => {
     model: typeof form.get("model") === "string" ? form.get("model") : "scribe_v2",
   });
 
-  if (user.tier === "free") {
+  // Every tier pays for STT from the universal `credits` pool — no free STT.
+  {
     const clientDuration = parseNumberField(form.get("durationSec")) ?? 0;
     const quote = quoteFreeOperation("transcribe", {
       durationSec: clientDuration,
@@ -198,6 +199,7 @@ route.post("/", TRANSCRIBE_RATE_LIMIT, async (c) => {
       });
     }
   }
+  void user;
 
   const fileName = file instanceof File && file.name ? file.name : `audio.${validated.ext}`;
   const audioKey = buildKey(userId, "transcriptions" as StorageKind, validated.ext);
@@ -260,29 +262,27 @@ route.post("/", TRANSCRIBE_RATE_LIMIT, async (c) => {
   const row = inserted[0];
   if (!row) throw new AppError("INTERNAL_ERROR", "Failed to insert transcription", 500);
 
-  if (user.tier === "free") {
-    const charge = quoteFreeOperation("transcribe", {
-      durationSec: duration,
-      keytermsCount: opts.keyterms.length,
-    });
-    if (charge.amount > 0) {
-      try {
-        await chargeFreeUser(userId, charge.amount, {
-          transcriptionId: row.id,
-          durationSec: duration,
-          reason: "transcribe",
-        });
-        await db
-          .update(transcriptions)
-          .set({ creditsCharged: charge.amount, updatedAt: new Date() })
-          .where(eq(transcriptions.id, row.id));
-        row.creditsCharged = charge.amount;
-      } catch (chargeErr) {
-        logger.error(
-          { err: chargeErr, userId, transcriptionId: row.id },
-          "transcription charge failed after success",
-        );
-      }
+  const charge = quoteFreeOperation("transcribe", {
+    durationSec: duration,
+    keytermsCount: opts.keyterms.length,
+  });
+  if (charge.amount > 0) {
+    try {
+      await chargeFreeUser(userId, charge.amount, {
+        transcriptionId: row.id,
+        durationSec: duration,
+        reason: "transcribe",
+      });
+      await db
+        .update(transcriptions)
+        .set({ creditsCharged: charge.amount, updatedAt: new Date() })
+        .where(eq(transcriptions.id, row.id));
+      row.creditsCharged = charge.amount;
+    } catch (chargeErr) {
+      logger.error(
+        { err: chargeErr, userId, transcriptionId: row.id },
+        "transcription charge failed after success",
+      );
     }
   }
 

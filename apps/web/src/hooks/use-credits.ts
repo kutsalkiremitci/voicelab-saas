@@ -8,6 +8,12 @@ export type CreditBalance = {
   source: "free" | "upstream";
   plan: "free" | "basic" | "pro" | "enterprise";
   resetAt?: string | null;
+  /**
+   * Universal app credit balance used by Speech-to-Text on every tier.
+   * Separate from `balance` so paid plans can keep showing their upstream
+   * TTS allowance there while STT bills against this pool.
+   */
+  transcribeBalance: number;
 };
 
 export function useCreditBalance() {

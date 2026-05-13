@@ -116,17 +116,19 @@ export default function TranscribeCreatePage() {
         ? `recording-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.${blobExt(recorder.blob.type || "audio/webm")}`
         : null;
 
-  const isFree = credits?.source === "free";
-  const balance = isFree ? credits?.balance ?? 0 : null;
+  // STT bills every tier from the same `credits` pool. The TTS-side
+  // `balance` field still reflects the free / upstream split — we read
+  // the dedicated `transcribeBalance` field here.
+  const balance = credits?.transcribeBalance ?? null;
 
   const { data: quote, isFetching: quoteLoading } = useTranscribeQuote({
     durationSec: effectiveDuration,
     keytermsCount: settings.keyterms.length,
-    enabled: isFree,
+    enabled: true,
   });
 
   const insufficient =
-    isFree && quote !== null && quote !== undefined && balance !== null && quote.amount > balance;
+    quote !== null && quote !== undefined && balance !== null && quote.amount > balance;
 
   async function handleSelect(f: File) {
     setFile(f);
@@ -229,7 +231,7 @@ export default function TranscribeCreatePage() {
               <p className="text-sm text-muted-foreground">{t("transcribe.sub")}</p>
             </div>
           </div>
-          {isFree && balance !== null && (
+          {balance !== null && (
             <div className="hidden rounded-lg border bg-card px-3 py-2 text-right md:block">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
                 {t("transcribe.balanceLabel")}
@@ -291,25 +293,13 @@ export default function TranscribeCreatePage() {
 
         {/* Cost + submit (always shown once we have an effective source) */}
         <div className="grid gap-4 md:grid-cols-2">
-          {isFree ? (
-            <CostPreview
-              quote={quote ?? null}
-              loading={quoteLoading}
-              durationSec={effectiveDuration}
-              keytermsCount={settings.keyterms.length}
-              balance={balance}
-            />
-          ) : (
-            <div className="rounded-2xl border bg-card p-5 text-sm">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5 text-accent" />
-                {t("transcribe.paidMeteringTitle")}
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {t("transcribe.paidMeteringBody")}
-              </p>
-            </div>
-          )}
+          <CostPreview
+            quote={quote ?? null}
+            loading={quoteLoading}
+            durationSec={effectiveDuration}
+            keytermsCount={settings.keyterms.length}
+            balance={balance}
+          />
 
           <div className="space-y-3 rounded-2xl border bg-card p-5">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">

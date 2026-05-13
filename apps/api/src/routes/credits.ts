@@ -27,12 +27,16 @@ credits.get("/balance", requireAuth, async (c) => {
   });
   if (!user) throw new AppError("USER_NOT_FOUND", "User not found", 404);
 
+  // `credits` table is the universal app-credit pool used by Speech-to-Text
+  // for every tier (no free STT for anyone).
+  const appCredits = (await getFreeBalance(userId)) ?? 0;
+
   if (user.tier === "free") {
-    const balance = await getFreeBalance(userId);
     return c.json({
-      balance: balance ?? 0,
+      balance: appCredits,
       source: "free" as const,
       plan: "free" as const,
+      transcribeBalance: appCredits,
     });
   }
 
@@ -44,6 +48,7 @@ credits.get("/balance", requireAuth, async (c) => {
     resetAt: sub.nextCharacterCountResetUnix
       ? new Date(sub.nextCharacterCountResetUnix * 1000).toISOString()
       : null,
+    transcribeBalance: appCredits,
   });
 });
 
@@ -54,11 +59,15 @@ credits.post("/quote", requireAuth, async (c) => {
     columns: { tier: true },
   });
   if (!user) throw new AppError("USER_NOT_FOUND", "User not found", 404);
-  if (user.tier !== "free") {
-    throw new AppError("QUOTE_NOT_APPLICABLE", "Quotes are Free-tier only", 409);
-  }
 
   const body = quoteSchema.parse(await c.req.json());
+
+  // STT charges from the universal `credits` pool on every tier. TTS / S2S
+  // remain Free-only (paid plans use upstream metering for those).
+  if (body.operation !== "transcribe" && user.tier !== "free") {
+    throw new AppError("QUOTE_NOT_APPLICABLE", "Quotes are Free-tier only for this operation", 409);
+  }
+
   const quote = quoteFreeOperation(body.operation, body.payload);
   return c.json(quote);
 });
