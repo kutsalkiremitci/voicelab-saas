@@ -120,11 +120,11 @@ describe("POST /transcriptions (transcribe)", () => {
     };
     expect(body.transcription.text).toBe("Mock transcription output.");
     expect(body.transcription.editVersion).toBe(0);
-    expect(body.transcription.creditsCharged).toBe(2);
+    expect(body.transcription.creditsCharged).toBe(1);
     expect(body.transcription.words.length).toBeGreaterThan(0);
 
     const credit = await db.query.credits.findFirst({ where: eq(credits.userId, userId) });
-    expect(credit?.balance).toBe(998);
+    expect(credit?.balance).toBe(999);
   });
 
   test("Free user with insufficient credits: 402 INSUFFICIENT_CREDITS", async () => {

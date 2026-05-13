@@ -28,7 +28,9 @@ export interface ChargeMetadata {
   [key: string]: unknown;
 }
 
-export const KEYTERM_SURCHARGE_MULTIPLIER = 1.2;
+// Upstream Scribe keyterm surcharge: +$0.05 on top of $0.22/hour base = 1.227x.
+// Round to 1.23 to keep the user-facing line "+23% for keywords" simple.
+export const KEYTERM_SURCHARGE_MULTIPLIER = 1.23;
 
 export function quoteFreeOperation(
   operation: FreeOperation,

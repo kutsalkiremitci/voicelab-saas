@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Upload, X, FileAudio } from "lucide-react";
+import { Upload, X, FileAudio, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { formatDuration } from "@/lib/audio-duration";
 interface Props {
   file: File | null;
   durationSec: number | null;
+  decoding?: boolean;
   maxBytes: number;
   onSelect: (file: File) => void | Promise<void>;
   onClear: () => void;
@@ -31,7 +32,15 @@ const ACCEPT = [
   ".mov",
 ].join(",");
 
-export function TranscribeDropzone({ file, durationSec, maxBytes, onSelect, onClear, disabled }: Props) {
+export function TranscribeDropzone({
+  file,
+  durationSec,
+  decoding,
+  maxBytes,
+  onSelect,
+  onClear,
+  disabled,
+}: Props) {
   const t = useTranslations();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -84,36 +93,59 @@ export function TranscribeDropzone({ file, durationSec, maxBytes, onSelect, onCl
             }
           }}
           className={cn(
-            "flex h-80 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed bg-muted/30 text-center transition-colors",
-            dragging ? "border-accent bg-accent/5" : "border-border hover:border-accent/60 hover:bg-muted/50",
+            "group relative flex h-80 cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed text-center transition-all",
+            dragging
+              ? "border-accent bg-accent/10 scale-[1.01]"
+              : "border-border bg-muted/20 hover:border-accent/60 hover:bg-muted/40",
             disabled && "pointer-events-none opacity-60",
           )}
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-background shadow-sm">
-            <Upload className="h-6 w-6 text-muted-foreground" />
+          <div
+            className={cn(
+              "flex h-16 w-16 items-center justify-center rounded-2xl bg-background shadow-sm transition-transform",
+              dragging && "scale-110",
+            )}
+          >
+            <Upload className={cn("h-7 w-7 text-muted-foreground transition-colors", dragging && "text-accent")} />
           </div>
           <div className="space-y-1 px-6">
-            <p className="text-base font-medium">{t("transcribe.dropTitle")}</p>
-            <p className="text-xs text-muted-foreground">{t("transcribe.dropHintFormats")}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-lg font-semibold">{t("transcribe.dropTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("transcribe.dropHintFormats")}</p>
+            <p className="text-xs text-muted-foreground/80">
               {t("transcribe.dropHintMax", { max: Math.round(maxBytes / (1024 * 1024)) })}
             </p>
           </div>
           {tooLarge && (
-            <p className="text-xs text-destructive">{t("transcribe.tooLarge")}</p>
+            <p className="absolute bottom-4 text-xs font-medium text-destructive">
+              {t("transcribe.tooLarge")}
+            </p>
           )}
         </div>
       ) : (
-        <div className="flex items-center gap-3 rounded-lg border bg-card p-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted">
-            <FileAudio className="h-5 w-5 text-muted-foreground" />
+        <div className="flex items-center gap-4 rounded-2xl border bg-card p-4 shadow-sm">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <FileAudio className="h-6 w-6" />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="truncate text-sm font-medium">{file.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {(file.size / (1024 * 1024)).toFixed(1)} MB
-              {durationSec !== null ? ` · ${formatDuration(durationSec)}` : ""}
-            </p>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+              <span className="tabular-nums">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+              <span className="opacity-40">·</span>
+              {decoding ? (
+                <span className="inline-flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {t("transcribe.decoding")}
+                </span>
+              ) : durationSec !== null ? (
+                <span className="tabular-nums">{formatDuration(durationSec)}</span>
+              ) : (
+                <span className="opacity-60">{t("transcribe.durationUnknown")}</span>
+              )}
+              <span className="opacity-40">·</span>
+              <span className="truncate" title={file.type}>
+                {file.type || t("transcribe.unknownType")}
+              </span>
+            </div>
           </div>
           <Button
             type="button"

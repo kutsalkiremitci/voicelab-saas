@@ -32,7 +32,7 @@ const schema = z.object({
   S3_ENDPOINT: z.string().url().optional(),
 
   CREDIT_PER_CHAR_TTS: z.coerce.number().positive().default(1),
-  CREDIT_PER_MINUTE_TRANSCRIBE: z.coerce.number().positive().default(33),
+  CREDIT_PER_MINUTE_TRANSCRIBE: z.coerce.number().positive().default(20),
   TRANSCRIBE_MAX_FILE_SIZE_BYTES: z.coerce.number().int().positive().default(1024 * 1024 * 1024),
   FREE_TIER_INITIAL_CREDITS: z.coerce.number().int().positive().default(1000),
 });

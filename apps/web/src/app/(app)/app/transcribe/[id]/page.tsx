@@ -5,7 +5,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ArrowLeft, ListTree, LayoutList, RotateCcw, Trash2, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ListTree,
+  LayoutList,
+  RotateCcw,
+  Trash2,
+  Loader2,
+  Languages,
+  Clock,
+  Users,
+  CheckCircle2,
+  Edit3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { TranscriptTimeline } from "@/components/transcribe/transcript-timeline";
@@ -35,6 +47,7 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
   const [isPlaying, setIsPlaying] = useState(false);
   const [view, setView] = useState<"segment" | "word">("segment");
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const [text, setText] = useState<string>("");
   const [words, setWords] = useState<TranscribedWord[]>([]);
@@ -62,15 +75,22 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
       if (textChanged) body.text = text;
       if (wordsChanged) body.words = words;
       if (speakersChanged) body.speakerNames = speakerNames;
+      setSaving(true);
       update.mutate(body, {
-        onSuccess: () => setSavedAt(Date.now()),
-        onError: () => toast.error(t("transcribe.viewer.saveFailed")),
+        onSuccess: () => {
+          setSaving(false);
+          setSavedAt(Date.now());
+        },
+        onError: () => {
+          setSaving(false);
+          toast.error(t("transcribe.viewer.saveFailed"));
+        },
       });
     }, 2000);
     return () => clearTimeout(timer);
   }, [text, words, speakerNames, data, update, t]);
 
-  // Re-derive text whenever words change (so transcript text stays consistent with edited words).
+  // Re-derive text whenever words change.
   useEffect(() => {
     if (words.length === 0) return;
     const derived = words
@@ -149,6 +169,17 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
     return data.transcription.fileName.replace(/\.[^.]+$/, "");
   }, [data]);
 
+  const speakerCount = useMemo(() => {
+    const ids = new Set<string>();
+    for (const w of words) if (w.speakerId) ids.add(w.speakerId);
+    return ids.size;
+  }, [words]);
+
+  const wordCount = useMemo(
+    () => words.filter((w) => w.type === "word").length,
+    [words],
+  );
+
   if (isLoading || !data) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -174,45 +205,73 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
         </Link>
       </div>
 
-      <header className="flex flex-wrap items-start justify-between gap-4 rounded-lg border bg-card p-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-lg font-semibold">{t13n.fileName}</h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {formatDuration(t13n.durationSec)} · {t13n.language.toUpperCase()}
-            {t13n.languageProbability > 0 &&
-              ` (${Math.round(t13n.languageProbability * 100)}%)`}{" "}
-            · {new Date(t13n.createdAt).toLocaleString()}
-          </p>
+      <header className="rounded-2xl border bg-card p-5 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-semibold tracking-tight">{t13n.fileName}</h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {new Date(t13n.createdAt).toLocaleString()} ·{" "}
+              {t("transcribe.viewer.modelLine", { model: t13n.model })}
+              {edited && ` · ${t("transcribe.viewer.editedTag", { v: t13n.editVersion })}`}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <SaveBadge saving={saving} savedAt={savedAt} edited={edited} />
+            <ExportMenu transcriptionId={t13n.id} baseName={baseName} />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-muted-foreground hover:text-destructive"
+              onClick={handleDelete}
+              aria-label={t("transcribe.viewer.delete")}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {savedAt && (
-            <span className="text-xs text-muted-foreground">
-              {t("transcribe.viewer.saved")} · {new Date(savedAt).toLocaleTimeString()}
-            </span>
-          )}
-          <ExportMenu transcriptionId={t13n.id} baseName={baseName} />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={handleDelete}
-            aria-label={t("transcribe.viewer.delete")}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+          <StatCell
+            icon={Clock}
+            label={t("transcribe.viewer.statDuration")}
+            value={formatDuration(t13n.durationSec)}
+          />
+          <StatCell
+            icon={Languages}
+            label={t("transcribe.viewer.statLanguage")}
+            value={`${t13n.language.toUpperCase()}${
+              t13n.languageProbability > 0
+                ? ` · ${Math.round(t13n.languageProbability * 100)}%`
+                : ""
+            }`}
+          />
+          <StatCell
+            icon={Edit3}
+            label={t("transcribe.viewer.statWords")}
+            value={wordCount.toLocaleString()}
+          />
+          <StatCell
+            icon={Users}
+            label={t("transcribe.viewer.statSpeakers")}
+            value={speakerCount > 0 ? String(speakerCount) : "—"}
+          />
         </div>
       </header>
 
-      <audio ref={audioRef} src={audioSrc} controls className="w-full" preload="metadata" />
+      <div className="sticky top-0 z-10 rounded-2xl border bg-card/95 p-3 shadow-sm backdrop-blur">
+        <audio ref={audioRef} src={audioSrc} controls className="w-full" preload="metadata" />
+      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="inline-flex rounded-md border bg-muted/30 p-0.5">
+        <div className="inline-flex rounded-lg border bg-muted/30 p-0.5">
           <button
             type="button"
             onClick={() => setView("segment")}
             className={cn(
-              "flex items-center gap-1.5 rounded px-2.5 py-1 text-xs transition-colors",
-              view === "segment" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+              view === "segment"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <ListTree className="h-3.5 w-3.5" />
@@ -222,8 +281,10 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
             type="button"
             onClick={() => setView("word")}
             className={cn(
-              "flex items-center gap-1.5 rounded px-2.5 py-1 text-xs transition-colors",
-              view === "word" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground",
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+              view === "word"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <LayoutList className="h-3.5 w-3.5" />
@@ -254,4 +315,61 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
       />
     </div>
   );
+}
+
+function StatCell({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Clock;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3">
+      <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
+      <p className="mt-1 text-sm font-semibold tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function SaveBadge({
+  saving,
+  savedAt,
+  edited,
+}: {
+  saving: boolean;
+  savedAt: number | null;
+  edited: boolean;
+}) {
+  const t = useTranslations();
+  if (saving) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        {t("transcribe.viewer.saving")}
+      </span>
+    );
+  }
+  if (savedAt) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+        <CheckCircle2 className="h-3 w-3" />
+        {t("transcribe.viewer.saved")}
+      </span>
+    );
+  }
+  if (edited) {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+        <Edit3 className="h-3 w-3" />
+        {t("transcribe.viewer.unsaved")}
+      </span>
+    );
+  }
+  return null;
 }
