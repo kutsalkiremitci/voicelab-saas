@@ -343,6 +343,22 @@
     "noVoicesFound": "No voices found."
   },
   "recordings": {
+    "source": {
+      "record": "Record",
+      "upload": "Upload"
+    },
+    "upload": {
+      "submit": "Upload recording",
+      "uploading": "Uploading…",
+      "success": "Recording uploaded.",
+      "failed": "Upload failed. Please try again.",
+      "formatUnsupported": "That audio format isn't supported. Try MP3, WAV, M4A, OGG, or WebM.",
+      "tooLarge": "File is too large (max 25 MB).",
+      "tooLong": "Recording must be shorter than 10 minutes.",
+      "tooLongInline": "Recording is too long. Trim it under {max} minutes before uploading.",
+      "nameLabel": "Recording name",
+      "namePlaceholder": "e.g. Calm narration, take 2"
+    },
     "title": "Recording studio",
     "sub": "Capture a clean minute of your voice. Use it to clone or convert speech.",
     "yours": "Your recordings",

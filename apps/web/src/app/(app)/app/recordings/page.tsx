@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Clock, FileAudio, HardDrive, Mic, Trash2 } from "lucide-react";
+import { Clock, FileAudio, HardDrive, Mic, Trash2, Upload } from "lucide-react";
 import { useRecordings, useDeleteRecording } from "@/hooks/use-recordings";
 import { RecordingPanel } from "@/components/studio/recording-panel";
+import { RecordingUploadCard } from "@/components/studio/recording-upload-card";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { cn } from "@/lib/utils";
+
+type Source = "record" | "upload";
 
 function formatDuration(sec: number): string {
   const m = Math.floor(sec / 60);
@@ -40,6 +43,7 @@ export default function RecordingsPage() {
   const { data, isLoading } = useRecordings();
   const del = useDeleteRecording();
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [source, setSource] = useState<Source>("record");
 
   const recordings = data?.recordings ?? [];
 
@@ -52,7 +56,36 @@ export default function RecordingsPage() {
         <p className="mt-1 text-sm text-muted-foreground">{t("recordings.sub")}</p>
       </div>
 
-      <RecordingPanel />
+      <div className="inline-flex self-start rounded-lg border bg-muted/30 p-0.5">
+        <button
+          type="button"
+          onClick={() => setSource("record")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            source === "record"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Mic className="h-3.5 w-3.5" />
+          {t("recordings.source.record")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setSource("upload")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+            source === "upload"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          <Upload className="h-3.5 w-3.5" />
+          {t("recordings.source.upload")}
+        </button>
+      </div>
+
+      {source === "record" ? <RecordingPanel /> : <RecordingUploadCard />}
 
       <section>
         <div className="mb-3 flex items-center justify-between">

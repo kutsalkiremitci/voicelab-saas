@@ -343,6 +343,22 @@
     "noVoicesFound": "Ses bulunamadı."
   },
   "recordings": {
+    "source": {
+      "record": "Kaydet",
+      "upload": "Yükle"
+    },
+    "upload": {
+      "submit": "Kaydı yükle",
+      "uploading": "Yükleniyor…",
+      "success": "Kayıt yüklendi.",
+      "failed": "Yükleme başarısız. Tekrar dene.",
+      "formatUnsupported": "Bu ses formatı desteklenmiyor. MP3, WAV, M4A, OGG veya WebM dene.",
+      "tooLarge": "Dosya çok büyük (maks 25 MB).",
+      "tooLong": "Kayıt 10 dakikadan kısa olmalı.",
+      "tooLongInline": "Kayıt çok uzun. Yüklemeden önce {max} dakikanın altına kısalt.",
+      "nameLabel": "Kayıt adı",
+      "namePlaceholder": "ör. Sakin anlatım, 2. çekim"
+    },
     "title": "Kayıt stüdyosu",
     "sub": "Sesinden temiz bir dakika yakala. Klonlamak ya da konuşma dönüştürmek için kullan.",
     "yours": "Kayıtların",
