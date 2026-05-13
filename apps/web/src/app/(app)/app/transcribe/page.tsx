@@ -81,7 +81,7 @@ export default function TranscribeCreatePage() {
 
   // Right panel (collapsible like TTS Explore)
   const [panelOpen, setPanelOpen] = useState(true);
-  const [panelWidth, setPanelWidth] = useState(360);
+  const [panelWidth, setPanelWidth] = useState(MAX_PANEL_W);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
