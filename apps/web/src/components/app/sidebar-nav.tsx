@@ -6,9 +6,10 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   ["/app", "Dashboard"],
+  ["/app/library", "Text to Speech"],
+  ["/app/transcribe", "Speech to Text"],
+  ["/app/voices", "Voice Clone"],
   ["/app/recordings", "Recordings"],
-  ["/app/library", "Library"],
-  ["/app/voices", "Voices"],
   ["/app/generations", "Generations"],
   ["/app/credits", "Credits"],
   ["/app/settings", "Settings"],
