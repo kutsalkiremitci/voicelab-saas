@@ -138,16 +138,16 @@
 
 **Skills:** `backend-development`, `billing-and-credits`, `test-driven-development`
 
-- [ ] All routes under `/admin/*` guarded by `requireAdmin`
-- [ ] `GET /admin/users` (filters: status, tier, search, cursor)
-- [ ] `GET /admin/users/:id` (full detail including upstream subscription state)
-- [ ] `PATCH /admin/users/:id` body `{ status?, tier? }`
-- [ ] `PUT /admin/users/:id/api-key` body `{ apiKey, plan }` — encrypts, stores, activates tier
-- [ ] `DELETE /admin/users/:id/api-key` — removes encrypted key, downgrades user
-- [ ] `POST /admin/users/:id/credits` (one-shot grant for support cases, e.g. "comp 500 credits"; only works on Free)
-- [ ] `GET /admin/metrics` (signups today, conversions, total active tiers)
-- [ ] `GET /admin/audit` (paginated)
-- [ ] Every admin write produces an `admin_audit_log` row
+- [x] All routes under `/admin/*` guarded by `requireAdmin`
+- [x] `GET /admin/users` (filters: status, tier, search, cursor)
+- [x] `GET /admin/users/:id` (full detail including upstream subscription state)
+- [x] `PATCH /admin/users/:id` body `{ status?, tier? }`
+- [x] `PUT /admin/users/:id/api-key` body `{ apiKey, plan }` — encrypts, stores, activates tier
+- [x] `DELETE /admin/users/:id/api-key` — removes encrypted key, downgrades user
+- [x] `POST /admin/users/:id/credits` (one-shot grant for support cases, e.g. "comp 500 credits"; only works on Free)
+- [x] `GET /admin/metrics` (signups today, conversions, total active tiers)
+- [x] `GET /admin/audit` (paginated)
+- [x] Every admin write produces an `admin_audit_log` row
 
 **Exit:** Admin can list users, paste API keys to upgrade them, suspend, and view metrics via curl.
 

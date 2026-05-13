@@ -11,6 +11,9 @@ import creditsRoute from "./routes/credits";
 import recordingsRoute from "./routes/recordings";
 import voicesRoute from "./routes/voices";
 import generationsRoute from "./routes/generations";
+import adminUsersRoute from "./routes/admin/users";
+import adminMetricsRoute from "./routes/admin/metrics";
+import adminAuditRoute from "./routes/admin/audit";
 
 const app = new Hono();
 
@@ -25,6 +28,9 @@ app.route("/api/v1/credits", creditsRoute);
 app.route("/api/v1/recordings", recordingsRoute);
 app.route("/api/v1/voices", voicesRoute);
 app.route("/api/v1/generations", generationsRoute);
+app.route("/api/v1/admin/users", adminUsersRoute);
+app.route("/api/v1/admin/metrics", adminMetricsRoute);
+app.route("/api/v1/admin/audit", adminAuditRoute);
 
 logger.info({ port: env.PORT }, "VoiceLab API starting");
 
