@@ -236,29 +236,29 @@
 
 **Skills:** `frontend-development`, `elevenlabs-integration`, `test-driven-development`
 
-- [ ] `/app/voices/:id` detail page
-  - [ ] Tabs: "Generate from text" | "Convert audio" (S2S)
-  - [ ] **Text input area** (TTS tab): textarea + character counter + per-model max length validation
-  - [ ] **Audio input** (S2S tab): drag/drop OR record from mic, MIME + duration validated
-  - [ ] **Voice settings panel:**
-    - [ ] `stability` slider 0–1 (default 0.5) — low = expressive, high = monotone
-    - [ ] `similarityBoost` slider 0–1 (default 0.75) — fidelity to source voice
-    - [ ] `style` slider 0–1 (default 0) — style exaggeration (v2+ models only, disabled if `model.canUseStyle === false`)
-    - [ ] `useSpeakerBoost` toggle (default true, disabled if `model.canUseSpeakerBoost === false`)
-    - [ ] `speed` slider 0.7–1.2 (default 1.0)
-  - [ ] **Model dropdown** (TTS: `eleven_multilingual_v2`, `eleven_turbo_v2_5`, `eleven_flash_v2_5`; S2S: `eleven_multilingual_sts_v2`) — populated from `GET /models`, filtered by capability
-  - [ ] **Output format dropdown** (tier-allowed):
-    - [ ] Free / Basic → `mp3_44100_128`
-    - [ ] Pro → `mp3_44100_128`, `mp3_44100_192`
-    - [ ] Enterprise → above + `pcm_44100`
-  - [ ] Credit quote for Free; for Paid, show remaining monthly allowance (from `getSubscriptionForUser`)
-  - [ ] Generate button (loading state)
-  - [ ] Inline player + download (filename derived from format)
-  - [ ] "Reset to defaults" button
-- [ ] Backend: `generateSpeech` + `speechToSpeech` accept `modelId`, `outputFormat`, and full `voiceSettings` (no longer hard-coded)
-- [ ] Backend: validate `modelId` against `models.list()` capability flags (TTS vs S2S; alpha access)
-- [ ] Backend: validate `outputFormat` against user's tier (route handler, before service)
-- [ ] `GET /models` route — proxies `client.models.list()`, 5 min Redis cache (per user)
+- [x] `/app/voices/:id` detail page
+  - [x] Tabs: "Generate from text" | "Convert audio" (S2S)
+  - [x] **Text input area** (TTS tab): textarea + character counter + per-model max length validation
+  - [x] **Audio input** (S2S tab): drag/drop OR record from mic, MIME + duration validated
+  - [x] **Voice settings panel:**
+    - [x] `stability` slider 0–1 (default 0.5) — low = expressive, high = monotone
+    - [x] `similarityBoost` slider 0–1 (default 0.75) — fidelity to source voice
+    - [x] `style` slider 0–1 (default 0) — style exaggeration (v2+ models only, disabled if `model.canUseStyle === false`)
+    - [x] `useSpeakerBoost` toggle (default true, disabled if `model.canUseSpeakerBoost === false`)
+    - [x] `speed` slider 0.7–1.2 (default 1.0)
+  - [x] **Model dropdown** (TTS: `eleven_multilingual_v2`, `eleven_turbo_v2_5`, `eleven_flash_v2_5`; S2S: `eleven_multilingual_sts_v2`) — populated from `GET /models`, filtered by capability
+  - [x] **Output format dropdown** (tier-allowed):
+    - [x] Free / Basic → `mp3_44100_128`
+    - [x] Pro → `mp3_44100_128`, `mp3_44100_192`
+    - [x] Enterprise → above + `pcm_44100`
+  - [x] Credit quote for Free; for Paid, show remaining monthly allowance (from `getSubscriptionForUser`)
+  - [x] Generate button (loading state)
+  - [x] Inline player + download (filename derived from format)
+  - [x] "Reset to defaults" button
+- [x] Backend: `generateSpeech` + `speechToSpeech` accept `modelId`, `outputFormat`, and full `voiceSettings` (no longer hard-coded)
+- [x] Backend: validate `modelId` against `models.list()` capability flags (TTS vs S2S; alpha access)
+- [x] Backend: validate `outputFormat` against user's tier (route handler, before service)
+- [x] `GET /models` route — proxies `client.models.list()`, 5 min Redis cache (per user)
 
 **Exit:** TTS and S2S flows complete; user picks model + output format + all voice settings + speed; backend validates per tier and per model capability. Settings documented in `.claude/skills/elevenlabs-integration/references/tts-settings.md`.
 

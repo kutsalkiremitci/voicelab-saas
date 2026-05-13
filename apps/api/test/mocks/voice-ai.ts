@@ -1,4 +1,5 @@
 import { mock } from "bun:test";
+import type { UpstreamModel } from "../../src/services/voice-ai";
 
 export type MockClient = {
   voices: {
@@ -9,6 +10,7 @@ export type MockClient = {
   textToSpeech: { convert: ReturnType<typeof mock> };
   speechToSpeech: { convert: ReturnType<typeof mock> };
   user: { subscription: { get: ReturnType<typeof mock> } };
+  models: { list: ReturnType<typeof mock> };
 };
 
 function makeAudioResponse(charCount: string) {
@@ -20,6 +22,62 @@ function makeAudioResponse(charCount: string) {
       },
     }),
   };
+}
+
+export function mockModels(): UpstreamModel[] {
+  return [
+    {
+      modelId: "eleven_multilingual_v2",
+      name: "Eleven Multilingual v2",
+      description: "Mock TTS model",
+      canDoTextToSpeech: true,
+      canDoVoiceConversion: false,
+      canBeFinetuned: false,
+      canUseStyle: true,
+      canUseSpeakerBoost: true,
+      servesProVoices: false,
+      requiresAlphaAccess: false,
+      tokenCostFactor: 1,
+      maxCharactersRequestFreeUser: 2500,
+      maxCharactersRequestSubscribedUser: 5000,
+      maximumTextLengthPerRequest: 5000,
+      languages: [{ languageId: "en", name: "English" }],
+    },
+    {
+      modelId: "eleven_turbo_v2_5",
+      name: "Eleven Turbo v2.5",
+      description: "Mock fast TTS model",
+      canDoTextToSpeech: true,
+      canDoVoiceConversion: false,
+      canBeFinetuned: false,
+      canUseStyle: false,
+      canUseSpeakerBoost: true,
+      servesProVoices: false,
+      requiresAlphaAccess: false,
+      tokenCostFactor: 0.5,
+      maxCharactersRequestFreeUser: 2500,
+      maxCharactersRequestSubscribedUser: 5000,
+      maximumTextLengthPerRequest: 5000,
+      languages: [{ languageId: "en", name: "English" }],
+    },
+    {
+      modelId: "eleven_multilingual_sts_v2",
+      name: "Eleven Multilingual STS v2",
+      description: "Mock S2S model",
+      canDoTextToSpeech: false,
+      canDoVoiceConversion: true,
+      canBeFinetuned: false,
+      canUseStyle: false,
+      canUseSpeakerBoost: false,
+      servesProVoices: false,
+      requiresAlphaAccess: false,
+      tokenCostFactor: 1,
+      maxCharactersRequestFreeUser: 0,
+      maxCharactersRequestSubscribedUser: 0,
+      maximumTextLengthPerRequest: 0,
+      languages: [{ languageId: "en", name: "English" }],
+    },
+  ];
 }
 
 export function mockElevenLabsClient(): MockClient {
@@ -47,6 +105,9 @@ export function mockElevenLabsClient(): MockClient {
             Math.floor(Date.now() / 1000) + 86400 * 30,
         })),
       },
+    },
+    models: {
+      list: mock(async () => mockModels()),
     },
   };
 }

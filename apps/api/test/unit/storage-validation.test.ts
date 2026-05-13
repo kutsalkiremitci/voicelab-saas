@@ -51,4 +51,28 @@ describe("validateAudio", () => {
       validateAudio({ buffer: txt, declaredMime: "audio/wav" }),
     ).rejects.toThrow();
   });
+
+  test("normalizes video/webm declared MIME — does not reject on that alone", async () => {
+    // video/webm is what browsers emit for audio-only WebM recordings.
+    // The declared MIME check must pass; the WAV magic bytes are still valid audio.
+    const v = await validateAudio({ buffer: minimalWav(), declaredMime: "video/webm" });
+    expect(["audio/wav", "audio/wave", "audio/x-wav"]).toContain(v.detectedMime);
+  });
+
+  test("normalizes video/webm detected MIME — file-type lib reports video/webm for WebM audio bytes", async () => {
+    // Minimal valid EBML/WebM header so file-type can detect the format.
+    // file-type returns { mime: "video/webm" } for any WebM — must normalize to audio/webm.
+    // EBML ID (4) + vint size 0x9f=31 + header children (31 bytes) = 36 bytes total
+    const webm = Buffer.from(
+      "1a45dfa39f" +         // EBML element ID + 1-byte vint size 31
+      "4286810142f78101" +   // EBMLVersion=1, EBMLReadVersion=1
+      "42f2810442f38108" +   // EBMLMaxIDLength=4, EBMLMaxSizeLength=8
+      "4282847765626d" +     // DocType ID + size=4 + "webm"
+      "4287810242858102",    // DocTypeVersion=2, DocTypeReadVersion=2
+      "hex",
+    );
+    const v = await validateAudio({ buffer: webm, declaredMime: "video/webm" });
+    expect(v.detectedMime).toBe("audio/webm");
+    expect(v.ext).toBe("webm");
+  });
 });

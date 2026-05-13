@@ -22,7 +22,7 @@ export default function VoicesPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Voices</h1>
-          <p className="text-sm text-muted-foreground">Your voice clones — the source of every generation.</p>
+          <p className="text-sm text-muted-foreground">Select a voice to generate speech or convert audio.</p>
         </div>
         <div className="flex gap-2">
           {canIvc ? (
@@ -92,9 +92,9 @@ export default function VoicesPage() {
                     <div className="flex justify-end gap-2">
                       <Link
                         href={`/app/voices/${v.id}`}
-                        className={cn(buttonVariants({ size: "sm", variant: "outline" }))}
+                        className={cn(buttonVariants({ size: "sm" }))}
                       >
-                        Open
+                        Generate
                       </Link>
                       <Button
                         size="icon"
@@ -114,7 +114,10 @@ export default function VoicesPage() {
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          No voices yet. {canIvc ? "Create your first clone." : "Upgrade to clone your voice."}
+          No voices yet.{" "}
+          {canIvc ? "Create your first clone above." : (
+            <>Upgrade to clone your voice — or wait for the voice library (coming soon).</>
+          )}
         </p>
       )}
     </div>

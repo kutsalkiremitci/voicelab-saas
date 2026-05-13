@@ -13,6 +13,7 @@ export type VoiceSettings = {
   similarityBoost?: number;
   style?: number;
   useSpeakerBoost?: boolean;
+  speed?: number;
 };
 
 export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
@@ -20,12 +21,34 @@ export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
   similarityBoost: 0.75,
   style: 0,
   useSpeakerBoost: true,
+  speed: 1.0,
+};
+
+export type UpstreamModel = {
+  modelId: string;
+  name: string;
+  description: string;
+  canDoTextToSpeech: boolean;
+  canDoVoiceConversion: boolean;
+  canBeFinetuned: boolean;
+  canUseStyle: boolean;
+  canUseSpeakerBoost: boolean;
+  servesProVoices: boolean;
+  requiresAlphaAccess: boolean;
+  tokenCostFactor: number;
+  maxCharactersRequestFreeUser: number;
+  maxCharactersRequestSubscribedUser: number;
+  maximumTextLengthPerRequest: number;
+  languages: Array<{ languageId: string; name: string }>;
+  modelRates?: Record<string, number>;
+  concurrencyGroup?: string;
 };
 
 const DEFAULT_TTS_MODEL = "eleven_multilingual_v2";
 const DEFAULT_S2S_MODEL = "eleven_multilingual_sts_v2";
 const DEFAULT_OUTPUT_FORMAT = "mp3_44100_128";
 const SUBSCRIPTION_CACHE_TTL_SECONDS = 60;
+const MODELS_CACHE_TTL_SECONDS = 300;
 
 type ClientFactory = (apiKey: string) => ElevenLabsClient;
 
@@ -53,6 +76,21 @@ export async function resolveApiKey(userId: string): Promise<string> {
 export async function getClientForUser(userId: string): Promise<ElevenLabsClient> {
   const apiKey = await resolveApiKey(userId);
   return internals.clientFactory(apiKey);
+}
+
+export async function listModels(userId: string): Promise<UpstreamModel[]> {
+  const cacheKey = `models:${userId}`;
+  const cached = await redis.get(cacheKey);
+  if (cached) return JSON.parse(cached) as UpstreamModel[];
+
+  const client = await getClientForUser(userId);
+  try {
+    const models = (await client.models.list()) as unknown as UpstreamModel[];
+    await redis.set(cacheKey, JSON.stringify(models), "EX", MODELS_CACHE_TTL_SECONDS);
+    return models;
+  } catch (e) {
+    wrapSdkError(e);
+  }
 }
 
 export async function cloneVoice(
@@ -87,17 +125,21 @@ export async function generateSpeech(
   userId: string,
   voiceId: string,
   text: string,
-  settings: VoiceSettings = DEFAULT_VOICE_SETTINGS,
+  opts: { modelId?: string; settings?: VoiceSettings; outputFormat?: string } = {},
 ): Promise<{ audio: ReadableStream; characterCount: number }> {
   const client = await getClientForUser(userId);
+  const modelId = opts.modelId ?? DEFAULT_TTS_MODEL;
+  const settings = { ...DEFAULT_VOICE_SETTINGS, ...opts.settings };
+  const outputFormat = opts.outputFormat ?? DEFAULT_OUTPUT_FORMAT;
+
   return withRetry(async () => {
     try {
       const { data, rawResponse } = await client.textToSpeech
         .convert(voiceId, {
           text,
-          modelId: DEFAULT_TTS_MODEL,
+          modelId,
           voiceSettings: settings,
-          outputFormat: DEFAULT_OUTPUT_FORMAT,
+          outputFormat: outputFormat as Parameters<typeof client.textToSpeech.convert>[1]["outputFormat"],
         })
         .withRawResponse();
       const characterCount =
@@ -115,17 +157,21 @@ export async function speechToSpeech(
   userId: string,
   voiceId: string,
   audio: Blob,
-  settings: VoiceSettings = DEFAULT_VOICE_SETTINGS,
+  opts: { modelId?: string; settings?: VoiceSettings; outputFormat?: string } = {},
 ): Promise<{ audio: ReadableStream; characterCount: number }> {
   const client = await getClientForUser(userId);
+  const modelId = opts.modelId ?? DEFAULT_S2S_MODEL;
+  const settings = { ...DEFAULT_VOICE_SETTINGS, ...opts.settings };
+  const outputFormat = opts.outputFormat ?? DEFAULT_OUTPUT_FORMAT;
+
   return withRetry(async () => {
     try {
       const { data, rawResponse } = await client.speechToSpeech
         .convert(voiceId, {
           audio,
-          modelId: DEFAULT_S2S_MODEL,
+          modelId,
           voiceSettings: JSON.stringify(settings),
-          outputFormat: DEFAULT_OUTPUT_FORMAT,
+          outputFormat: outputFormat as Parameters<typeof client.speechToSpeech.convert>[1]["outputFormat"],
         })
         .withRawResponse();
       const characterCount = Number(rawResponse.headers?.get("x-character-count") ?? 0);

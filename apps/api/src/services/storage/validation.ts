@@ -37,7 +37,9 @@ export async function validateAudio(input: {
   buffer: Buffer;
   declaredMime: string;
 }): Promise<ValidatedAudio> {
-  const declared = input.declaredMime.toLowerCase();
+  // Browser MediaRecorder labels audio-only WebM recordings as video/webm
+  const raw = input.declaredMime.toLowerCase();
+  const declared = raw === "video/webm" ? "audio/webm" : raw;
   if (!ALLOWED_AUDIO_MIMES.includes(declared as (typeof ALLOWED_AUDIO_MIMES)[number])) {
     throw new AppError("INVALID_FILE", `Disallowed content type: ${declared}`, 400);
   }
@@ -53,14 +55,16 @@ export async function validateAudio(input: {
   if (!detected) {
     throw new AppError("INVALID_FILE", "Unrecognized binary signature", 400);
   }
-  if (!ALLOWED_AUDIO_MIMES.includes(detected.mime as (typeof ALLOWED_AUDIO_MIMES)[number])) {
+  // file-type library reports audio-only WebM as video/webm — normalize same as declared MIME
+  const detectedMime = detected.mime === "video/webm" ? "audio/webm" : detected.mime;
+  if (!ALLOWED_AUDIO_MIMES.includes(detectedMime as (typeof ALLOWED_AUDIO_MIMES)[number])) {
     throw new AppError(
       "INVALID_FILE",
-      `Magic bytes report unsupported type: ${detected.mime}`,
+      `Magic bytes report unsupported type: ${detectedMime}`,
       400,
     );
   }
 
-  const ext = MIME_TO_EXT[detected.mime] ?? detected.ext;
-  return { buffer: input.buffer, detectedMime: detected.mime, ext };
+  const ext = MIME_TO_EXT[detectedMime] ?? detected.ext;
+  return { buffer: input.buffer, detectedMime, ext };
 }

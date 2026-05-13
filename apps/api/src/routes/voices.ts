@@ -11,10 +11,12 @@ import {
   cloneVoice,
   deleteVoice,
   generateSpeech,
+  listModels,
   speechToSpeech,
 } from "../services/voice-ai";
 import {
   checkCloningPermission,
+  checkOutputFormat,
   checkSpeechToSpeechPermission,
   type Tier,
 } from "../lib/tier-gates";
@@ -29,7 +31,11 @@ import {
   createVoiceSchema,
   listVoicesQuerySchema,
 } from "@voicelab/shared/schemas/voices";
-import { generateSchema } from "@voicelab/shared/schemas/generations";
+import {
+  generateSchema,
+  s2sBodySchema,
+  type OutputFormat,
+} from "@voicelab/shared/schemas/generations";
 
 const route = new Hono<{ Variables: AuthVariables }>();
 route.use("*", requireAuth, requireVerified);
@@ -178,6 +184,30 @@ route.post(
 
     const tier = await getUserTier(userId);
 
+    // Validate output format against tier
+    const outputFormat: OutputFormat = body.outputFormat ?? "mp3_44100_128";
+    checkOutputFormat(tier, outputFormat);
+
+    // Validate modelId against available models + capability
+    const modelId = body.modelId ?? "eleven_multilingual_v2";
+    const availableModels = await listModels(userId);
+    const model = availableModels.find(
+      (m) => m.modelId === modelId && m.canDoTextToSpeech && !m.requiresAlphaAccess,
+    );
+    if (!model) {
+      throw new AppError("INVALID_MODEL", "Model not available for text-to-speech", 400);
+    }
+
+    // Validate text length against model limit
+    if (body.text.length > model.maximumTextLengthPerRequest) {
+      throw new AppError(
+        "TEXT_TOO_LONG",
+        `Text exceeds model limit of ${model.maximumTextLengthPerRequest} characters`,
+        400,
+        { limit: model.maximumTextLengthPerRequest, length: body.text.length },
+      );
+    }
+
     if (tier === "free") {
       const quote = quoteFreeOperation("tts", { text: body.text });
       const balance = (await getFreeBalance(userId)) ?? 0;
@@ -190,16 +220,23 @@ route.post(
       }
     }
 
-    const result = await generateSpeech(
-      userId,
-      voice.elevenLabsVoiceId,
-      body.text,
-      body.settings,
-    );
+    const result = await generateSpeech(userId, voice.elevenLabsVoiceId, body.text, {
+      modelId,
+      settings: body.settings,
+      outputFormat,
+    });
     const audioBuffer = Buffer.from(await new Response(result.audio).arrayBuffer());
 
-    const key = buildKey(userId, "generations", "mp3");
-    await storage.put(key, audioBuffer, "audio/mpeg");
+    const ext = outputFormat.startsWith("pcm") ? "pcm" : "mp3";
+    const mime = outputFormat.startsWith("pcm") ? "audio/pcm" : "audio/mpeg";
+    const key = buildKey(userId, "generations", ext);
+    await storage.put(key, audioBuffer, mime);
+
+    const settingsPayload = {
+      modelId,
+      outputFormat,
+      ...(body.settings ?? {}),
+    };
 
     const inserted = await db
       .insert(generations)
@@ -208,10 +245,10 @@ route.post(
         voiceId: voice.id,
         text: body.text,
         storageKey: key,
-        mimeType: "audio/mpeg",
+        mimeType: mime,
         sizeBytes: audioBuffer.length,
         characterCount: result.characterCount,
-        settings: body.settings ?? null,
+        settings: settingsPayload,
       })
       .returning();
     const row = inserted[0];
@@ -254,6 +291,30 @@ route.post(
     if (!(file instanceof Blob)) {
       throw new AppError("INVALID_FILE", "audio field missing", 400);
     }
+
+    // Parse optional JSON fields from the form
+    const rawSettings = form.get("settings");
+    const rawModelId = form.get("modelId");
+    const rawOutputFormat = form.get("outputFormat");
+
+    const s2sBody = s2sBodySchema.parse({
+      modelId: rawModelId != null ? String(rawModelId) : undefined,
+      outputFormat: rawOutputFormat != null ? String(rawOutputFormat) : undefined,
+      settings: rawSettings ? JSON.parse(String(rawSettings)) : undefined,
+    });
+
+    const outputFormat: OutputFormat = s2sBody.outputFormat ?? "mp3_44100_128";
+    checkOutputFormat(tier, outputFormat);
+
+    const modelId = s2sBody.modelId ?? "eleven_multilingual_sts_v2";
+    const availableModels = await listModels(userId);
+    const model = availableModels.find(
+      (m) => m.modelId === modelId && m.canDoVoiceConversion && !m.requiresAlphaAccess,
+    );
+    if (!model) {
+      throw new AppError("INVALID_MODEL", "Model not available for voice conversion", 400);
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const declaredMime =
       (file as { type?: string }).type && (file as { type?: string }).type !== ""
@@ -262,11 +323,23 @@ route.post(
     const validated = await validateAudio({ buffer, declaredMime });
 
     const inputBlob = new Blob([validated.buffer], { type: validated.detectedMime });
-    const result = await speechToSpeech(userId, voice.elevenLabsVoiceId, inputBlob);
+    const result = await speechToSpeech(userId, voice.elevenLabsVoiceId, inputBlob, {
+      modelId,
+      settings: s2sBody.settings,
+      outputFormat,
+    });
     const audioBuffer = Buffer.from(await new Response(result.audio).arrayBuffer());
 
-    const key = buildKey(userId, "generations", "mp3");
-    await storage.put(key, audioBuffer, "audio/mpeg");
+    const ext = outputFormat.startsWith("pcm") ? "pcm" : "mp3";
+    const mime = outputFormat.startsWith("pcm") ? "audio/pcm" : "audio/mpeg";
+    const key = buildKey(userId, "generations", ext);
+    await storage.put(key, audioBuffer, mime);
+
+    const settingsPayload = {
+      modelId,
+      outputFormat,
+      ...(s2sBody.settings ?? {}),
+    };
 
     const inserted = await db
       .insert(generations)
@@ -275,9 +348,10 @@ route.post(
         voiceId: voice.id,
         text: "[speech-to-speech]",
         storageKey: key,
-        mimeType: "audio/mpeg",
+        mimeType: mime,
         sizeBytes: audioBuffer.length,
         characterCount: result.characterCount,
+        settings: settingsPayload,
       })
       .returning();
     const row = inserted[0];
@@ -299,8 +373,7 @@ route.delete("/:id", async (c) => {
   try {
     await deleteVoice(userId, existing.elevenLabsVoiceId);
   } catch (err) {
-    // Upstream delete failures shouldn't block local cleanup; surface but continue.
-    // The local row is removed regardless so the slot reflects user intent.
+    // Upstream delete failures shouldn't block local cleanup.
   }
 
   await db.delete(voices).where(and(eq(voices.id, id), eq(voices.userId, userId)));
