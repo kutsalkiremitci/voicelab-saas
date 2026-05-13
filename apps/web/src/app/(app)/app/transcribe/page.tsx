@@ -221,27 +221,14 @@ export default function TranscribeCreatePage() {
           )}
         </div>
 
-        <header className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
-              <Mic className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{t("transcribe.title")}</h1>
-              <p className="text-sm text-muted-foreground">{t("transcribe.sub")}</p>
-            </div>
+        <header className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <Mic className="h-5 w-5" />
           </div>
-          {balance !== null && (
-            <div className="hidden rounded-lg border bg-card px-3 py-2 text-right md:block">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                {t("transcribe.balanceLabel")}
-              </p>
-              <p className="text-base font-semibold tabular-nums">
-                {balance.toLocaleString()}{" "}
-                <span className="text-xs text-muted-foreground">{t("transcribe.creditsUnit")}</span>
-              </p>
-            </div>
-          )}
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">{t("transcribe.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("transcribe.sub")}</p>
+          </div>
         </header>
 
         {/* Source tabs */}

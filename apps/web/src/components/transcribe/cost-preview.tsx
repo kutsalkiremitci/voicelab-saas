@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
+import { Sparkles, AlertTriangle, ArrowRight, ArrowRight as ArrowToken } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -18,20 +18,25 @@ interface Props {
 
 export function CostPreview({ quote, loading, durationSec, keytermsCount, balance }: Props) {
   const t = useTranslations();
+  const hasFile = durationSec !== null && durationSec > 0;
+  const cost = hasFile ? quote?.amount ?? 0 : 0;
+  const after = balance !== null ? balance - cost : null;
+  const insufficient =
+    hasFile && quote !== null && quote !== undefined && balance !== null && quote.amount > balance;
+  const deficit = insufficient && quote && balance !== null ? quote.amount - balance : 0;
 
-  if (durationSec === null || durationSec <= 0) {
+  if (!hasFile) {
+    // No file yet — keep it minimal; balance is irrelevant until there is something to charge against.
     return (
-      <div className="rounded-2xl border bg-card p-5 text-sm">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Sparkles className="h-4 w-4" />
-          <span>{t("transcribe.costEmpty")}</span>
+      <div className="rounded-2xl border bg-card p-5">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5 text-accent" />
+          {t("transcribe.costTitle")}
         </div>
+        <p className="mt-2 text-sm text-muted-foreground">{t("transcribe.costEmpty")}</p>
       </div>
     );
   }
-
-  const insufficient = quote !== null && quote !== undefined && balance !== null && quote.amount > balance;
-  const deficit = insufficient && quote && balance !== null ? quote.amount - balance : 0;
 
   return (
     <div
@@ -45,40 +50,41 @@ export function CostPreview({ quote, loading, durationSec, keytermsCount, balanc
         {t("transcribe.costTitle")}
       </div>
 
-      <div className="mt-2 flex items-baseline gap-2">
-        <span
-          className={cn(
-            "text-4xl font-semibold tabular-nums",
-            insufficient && "text-destructive",
-          )}
-        >
-          {loading ? "…" : quote?.amount.toLocaleString() ?? "—"}
+      {/* Balance → after-deduction bar (TTS-style) */}
+      <div
+        className={cn(
+          "mt-3 flex items-baseline gap-2 font-semibold tabular-nums",
+          insufficient && "text-destructive",
+        )}
+      >
+        <span className="text-4xl">
+          {balance !== null ? balance.toLocaleString() : "—"}
         </span>
-        <span className="text-sm text-muted-foreground">{t("transcribe.creditsUnit")}</span>
+        {cost > 0 && (
+          <>
+            <ArrowToken className="h-5 w-5 self-center opacity-50" />
+            <span className={cn("text-3xl", insufficient && "underline decoration-destructive")}>
+              {after !== null ? after.toLocaleString() : "—"}
+            </span>
+          </>
+        )}
+        <span className="text-sm font-normal text-muted-foreground">
+          {t("transcribe.creditsUnit")}
+        </span>
       </div>
 
-      <p className="mt-1 text-xs text-muted-foreground">
-        {t("transcribe.costBreakdown", {
-          duration: formatDuration(durationSec),
-          rate: quote?.ratePerChar ?? 0,
-        })}
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        {loading
+          ? t("transcribe.costEstimating")
+          : t("transcribe.costLine", {
+              cost: cost.toLocaleString(),
+              duration: formatDuration(durationSec),
+              rate: quote?.ratePerChar ?? 0,
+            })}
         {keytermsCount > 0 && ` · ${t("transcribe.surchargeKeywords")}`}
       </p>
 
-      {balance !== null && (
-        <div className="mt-4 flex items-center justify-between border-t border-dashed pt-3 text-xs">
-          <span className="text-muted-foreground">{t("transcribe.balanceLabel")}</span>
-          <span
-            className={cn(
-              "font-medium tabular-nums",
-              insufficient ? "text-destructive" : "text-foreground",
-            )}
-          >
-            {balance.toLocaleString()} {t("transcribe.creditsUnit")}
-          </span>
-        </div>
-      )}
-
+      {/* Insufficient warning */}
       {insufficient && (
         <div className="mt-3 flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
