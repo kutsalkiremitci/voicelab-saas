@@ -6,6 +6,7 @@ import { requestLogger } from "./middleware/logger";
 import { errorHandler } from "./middleware/error";
 import health from "./routes/health";
 import auth from "./routes/auth";
+import files from "./routes/files";
 
 const app = new Hono();
 
@@ -15,6 +16,7 @@ app.onError(errorHandler);
 
 app.route("/api/v1/health", health);
 app.route("/api/v1/auth", auth);
+app.route("/api/v1/files", files);
 
 logger.info({ port: env.PORT }, "VoiceLab API starting");
 

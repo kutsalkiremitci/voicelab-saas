@@ -62,14 +62,14 @@
 
 **Skills:** `storage-adapter`, `backend-development`, `test-driven-development`
 
-- [ ] `StorageAdapter` interface (`put`, `get`, `delete`, `exists`)
-- [ ] `LocalStorageAdapter` (writes to `./storage`)
-- [ ] `S3StorageAdapter` skeleton (compiles, unit-tested with mock)
-- [ ] Key naming: `audio/{userId}/{kind}/{uuid}.{ext}`
-- [ ] MIME + magic-byte validation utility
-- [ ] Authenticated proxy endpoint: `GET /files/:type/:id` (ownership enforced)
-- [ ] Range request support (audio seeking)
-- [ ] Adapter swap by `STORAGE_DRIVER` env
+- [x] `StorageAdapter` interface (`put`, `get`, `delete`, `exists`)
+- [x] `LocalStorageAdapter` (writes to `./storage`)
+- [x] `S3StorageAdapter` skeleton (compiles, unit-tested with mock)
+- [x] Key naming: `audio/{userId}/{kind}/{uuid}.{ext}`
+- [x] MIME + magic-byte validation utility
+- [x] Authenticated proxy endpoint: `GET /files/:type/:id` (ownership enforced)
+- [x] Range request support (audio seeking)
+- [x] Adapter swap by `STORAGE_DRIVER` env
 
 **Exit:** Same API path works with local; S3 adapter passes unit tests.
 
