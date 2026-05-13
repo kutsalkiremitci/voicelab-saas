@@ -157,16 +157,16 @@
 
 **Skills:** `frontend-development`, `test-driven-development`
 
-- [ ] Next.js 16 App Router (`apps/web`)
-- [ ] Tailwind 4 + theme tokens
-- [ ] shadcn/ui init + base primitives
-- [ ] Geist or Inter via `next/font`
-- [ ] Three route groups: `(marketing)/`, `(app)/`, `(admin)/`
-- [ ] Layout shells per group (admin has visual context cue, amber accent)
-- [ ] Theme provider (dark default)
-- [ ] TanStack Query setup, API client (`lib/api.ts`) with credentials
-- [ ] Toast (sonner)
-- [ ] Middleware: redirect unauthed away from `/app/**` and `/admin/**`; redirect `unverified` users to `/verify-email`
+- [x] Next.js 16 App Router (`apps/web`)
+- [x] Tailwind 4 + theme tokens
+- [x] shadcn/ui init + base primitives
+- [x] Geist or Inter via `next/font`
+- [x] Three route groups: `(marketing)/`, `(app)/`, `(admin)/`
+- [x] Layout shells per group (admin has visual context cue, amber accent)
+- [x] Theme provider (dark default)
+- [x] TanStack Query setup, API client (`lib/api.ts`) with credentials
+- [x] Toast (sonner)
+- [x] Proxy (Next.js 16 successor to middleware): redirect unauthed from `/app/**` and `/admin/**`; redirect `unverified` to `/verify-email`
 
 **Exit:** Themed shells render; route guards work.
 
