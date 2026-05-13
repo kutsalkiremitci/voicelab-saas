@@ -19,6 +19,7 @@ import { useVoices } from "@/hooks/use-voices";
 import { useGenerations } from "@/hooks/use-generations";
 import { useAuth } from "@/hooks/use-auth";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { AudioPlayer } from "@/components/ui/audio-player";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { cn } from "@/lib/utils";
 
@@ -266,7 +267,7 @@ export default function AppDashboardPage() {
                 <li key={g.id} className="flex items-center justify-between gap-3 py-3">
                   <span className="truncate pr-3 text-foreground">{g.text}</span>
                   <div className="flex shrink-0 items-center gap-3">
-                    <audio src={g.url} controls className="h-7 w-40" />
+                    <AudioPlayer src={g.url} className="w-64" />
                     <span className="hidden text-xs text-muted-foreground sm:inline">
                       {new Date(g.createdAt).toLocaleDateString()}
                     </span>

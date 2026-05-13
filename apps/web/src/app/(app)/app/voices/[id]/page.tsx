@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Download, Loader2, Mic, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AudioPlayer } from "@/components/ui/audio-player";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -57,7 +58,7 @@ function InlinePlayer({
 }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border bg-muted/40 p-3">
-      <audio controls className="flex-1 h-8" src={url} />
+      <AudioPlayer src={url} className="flex-1" />
       <a href={url} download={`generation.${formatExt(outputFormat)}`} className="shrink-0">
         <Button variant="outline" size="sm">
           <Download className="h-4 w-4 mr-1" />

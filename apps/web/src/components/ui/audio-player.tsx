@@ -109,7 +109,10 @@ export function AudioPlayer({ src, initialDuration, className }: Props) {
         {playing ? <Pause className="h-4 w-4" /> : <Play className="ml-0.5 h-4 w-4" />}
       </button>
 
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+          {format(current)}
+        </span>
         <div
           role="slider"
           aria-valuenow={Math.round(current)}
@@ -119,7 +122,7 @@ export function AudioPlayer({ src, initialDuration, className }: Props) {
           onClick={seek}
           onMouseMove={trackHover}
           onMouseLeave={() => setHover(null)}
-          className="group relative h-1.5 cursor-pointer rounded-full bg-border"
+          className="group relative h-1.5 flex-1 cursor-pointer self-center rounded-full bg-border"
         >
           <div
             className="absolute inset-y-0 left-0 rounded-full bg-accent transition-all"
@@ -136,10 +139,9 @@ export function AudioPlayer({ src, initialDuration, className }: Props) {
             style={{ left: `${pct}%` }}
           />
         </div>
-        <div className="mt-1 flex items-center justify-between text-[10px] tabular-nums text-muted-foreground">
-          <span>{format(current)}</span>
-          <span>{format(duration)}</span>
-        </div>
+        <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+          {format(duration)}
+        </span>
       </div>
 
       <button

@@ -7,6 +7,7 @@ import { Mic, Pause, Play, Square, Trash2, Upload } from "lucide-react";
 import { useRecorder } from "@/hooks/use-recorder";
 import { Waveform } from "@/components/studio/waveform";
 import { Button } from "@/components/ui/button";
+import { AudioPlayer } from "@/components/ui/audio-player";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buildRecordingForm, uploadRecording } from "@/lib/upload";
@@ -141,11 +142,7 @@ export function RecordingPanel() {
       </div>
 
       {recorder.blobUrl && recorder.state === "stopped" && (
-        <audio
-          src={recorder.blobUrl}
-          controls
-          className="mt-4 w-full"
-        />
+        <AudioPlayer src={recorder.blobUrl} className="mt-4 w-full" />
       )}
     </div>
   );

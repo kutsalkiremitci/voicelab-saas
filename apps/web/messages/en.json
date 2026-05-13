@@ -547,6 +547,8 @@
       "empty": "No transcriptions yet.",
       "createFirst": "Create your first transcription",
       "confirmDelete": "Delete this transcription?",
+      "confirmTitle": "Delete transcription?",
+      "confirmBody": "\"{name}\" and its audio will be permanently removed. This cannot be undone.",
       "deleted": "Transcription deleted.",
       "deleteFailed": "Could not delete transcription.",
       "delete": "Delete",

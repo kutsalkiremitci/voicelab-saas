@@ -208,6 +208,36 @@ auth.post("/logout", async (c) => {
   return c.json({ ok: true }, 200);
 });
 
+auth.post("/change-password", requireAuth, async (c) => {
+  const userId = c.get("userId");
+  const body = (await c.req.json()) as { currentPassword?: unknown; newPassword?: unknown };
+  const current = typeof body.currentPassword === "string" ? body.currentPassword : "";
+  const next = typeof body.newPassword === "string" ? body.newPassword : "";
+  if (next.length < 8) {
+    throw new AppError("WEAK_PASSWORD", "New password must be at least 8 characters", 422, {
+      minLength: 8,
+    });
+  }
+  if (next === current) {
+    throw new AppError("SAME_PASSWORD", "New password must differ from the current one", 422);
+  }
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!user) throw new AppError("USER_NOT_FOUND", "User not found", 404);
+
+  const ok = await bcrypt.compare(current, user.password);
+  if (!ok) {
+    throw new AppError("INVALID_CURRENT_PASSWORD", "Current password is incorrect", 401);
+  }
+  const hash = await bcrypt.hash(next, 12);
+  await db
+    .update(users)
+    .set({ password: hash, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+
+  return c.json({ ok: true }, 200);
+});
+
 auth.get("/me", requireAuth, async (c) => {
   const userId = c.get("userId");
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });

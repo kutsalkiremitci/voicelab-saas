@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { AudioPlayer } from "@/components/ui/audio-player";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -666,7 +667,7 @@ export default function TextToSpeechPage() {
         {/* Result player */}
         {result && (
           <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3">
-            <audio controls className="flex-1 h-8" src={result.url} />
+            <AudioPlayer src={result.url} className="flex-1" />
             <a
               href={result.url}
               download={`speech.${outputFormat.startsWith("pcm") ? "pcm" : "mp3"}`}

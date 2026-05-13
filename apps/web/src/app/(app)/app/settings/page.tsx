@@ -22,9 +22,10 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { LanguageSelect } from "@/components/language-select";
+import { ChangePasswordForm } from "@/components/app/change-password-form";
 import { cn } from "@/lib/utils";
 
 const TIER_NAMES: Record<string, string> = {
@@ -240,18 +241,15 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-dashed">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base text-muted-foreground">
-            <Lock className="h-4 w-4" />
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Lock className="h-4 w-4 text-muted-foreground" />
             {t("settings.security")}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted-foreground">{t("settings.securityBody")}</p>
-          <Button variant="outline" size="sm" disabled className="mt-3 opacity-60">
-            {t("settings.changePasswordSoon")}
-          </Button>
+          <ChangePasswordForm />
         </CardContent>
       </Card>
     </div>

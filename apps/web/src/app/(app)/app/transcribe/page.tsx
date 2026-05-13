@@ -18,6 +18,7 @@ import {
   Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AudioPlayer } from "@/components/ui/audio-player";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 import { TranscribeDropzone } from "@/components/transcribe/transcribe-dropzone";
 import {
@@ -468,9 +469,7 @@ function RecorderCard({
         )}
       </div>
 
-      {isDone && recorder.blobUrl && (
-        <audio src={recorder.blobUrl} controls className="w-full" />
-      )}
+      {isDone && recorder.blobUrl && <AudioPlayer src={recorder.blobUrl} className="w-full" />}
     </div>
   );
 }

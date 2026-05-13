@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useGenerations, useDeleteGeneration, type Generation } from "@/hooks/use-generations";
 import { useVoices } from "@/hooks/use-voices";
 import { Button } from "@/components/ui/button";
+import { AudioPlayer } from "@/components/ui/audio-player";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Breadcrumbs } from "@/components/app/breadcrumbs";
 
@@ -67,7 +68,7 @@ export default function GenerationsPage() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-2">
-                      <audio src={g.url} controls className="h-8 max-w-[180px]" />
+                      <AudioPlayer src={g.url} className="w-64" />
                       <Button
                         size="icon"
                         variant="ghost"

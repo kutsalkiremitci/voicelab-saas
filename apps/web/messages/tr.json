@@ -420,7 +420,20 @@
     "appearanceSub": "Açık ve koyu tema arasında geçiş yap.",
     "languageSub": "Arayüz dilini seç.",
     "securityBody": "Şifre değişikliği ve e-posta değişikliği sonraki bir aşamada gelecek.",
-    "changePasswordSoon": "Şifreyi değiştir (yakında)"
+    "changePasswordSoon": "Şifreyi değiştir (yakında)",
+    "password": {
+      "current": "Mevcut şifre",
+      "new": "Yeni şifre",
+      "confirm": "Yeni şifre (tekrar)",
+      "submit": "Şifreyi güncelle",
+      "hint": "En az 8 karakter. Mevcut şifrenden farklı olmalı.",
+      "errorCurrent": "Mevcut şifre yanlış.",
+      "errorWeak": "Yeni şifre en az 8 karakter olmalı.",
+      "errorSame": "Yeni şifre mevcut şifreden farklı olmalı.",
+      "errorMismatch": "Şifreler eşleşmiyor.",
+      "errorGeneric": "Şifre güncellenemedi. Tekrar dene.",
+      "toastSuccess": "Şifre güncellendi."
+    }
   },
   "transcribe": {
     "title": "Sesten Metne",
