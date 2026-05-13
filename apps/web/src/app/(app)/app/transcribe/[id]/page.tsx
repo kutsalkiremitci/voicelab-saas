@@ -48,6 +48,7 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
   const [view, setView] = useState<"segment" | "word">("segment");
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [audioMissing, setAudioMissing] = useState(false);
 
   const [text, setText] = useState<string>("");
   const [words, setWords] = useState<TranscribedWord[]>([]);
@@ -114,15 +115,21 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
     };
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
+    const onError = () => setAudioMissing(true);
+    const onLoaded = () => setAudioMissing(false);
     el.addEventListener("timeupdate", onTime);
     el.addEventListener("play", onPlay);
     el.addEventListener("pause", onPause);
     el.addEventListener("ended", onPause);
+    el.addEventListener("error", onError);
+    el.addEventListener("loadedmetadata", onLoaded);
     return () => {
       el.removeEventListener("timeupdate", onTime);
       el.removeEventListener("play", onPlay);
       el.removeEventListener("pause", onPause);
       el.removeEventListener("ended", onPause);
+      el.removeEventListener("error", onError);
+      el.removeEventListener("loadedmetadata", onLoaded);
     };
   }, [data]);
 
@@ -260,6 +267,18 @@ export default function TranscriptionViewerPage({ params }: { params: Params }) 
 
       <div className="sticky top-0 z-10 rounded-2xl border bg-card/95 p-3 shadow-sm backdrop-blur">
         <audio ref={audioRef} src={audioSrc} controls className="w-full" preload="metadata" />
+        {audioMissing && (
+          <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+            <div>
+              <p className="font-medium">{t("transcribe.viewer.audioMissingTitle")}</p>
+              <p className="text-destructive/80">{t("transcribe.viewer.audioMissingBody")}</p>
+            </div>
+            <Button variant="destructive" size="sm" className="h-8 gap-1.5" onClick={handleDelete}>
+              <Trash2 className="h-3 w-3" />
+              {t("transcribe.viewer.delete")}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">

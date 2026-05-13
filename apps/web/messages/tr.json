@@ -428,6 +428,8 @@
       "statWords": "Kelime",
       "statSpeakers": "Konuşmacı",
       "delete": "Transkripsiyonu sil",
+      "audioMissingTitle": "Ses dosyası bulunamadı",
+      "audioMissingBody": "Bu transkripte ait kayıtlı ses yüklenemedi. Metin sağlam ama oynatma ve PDF/DOCX dışa aktarımı çalışmaz. Bu kaydı silip dosyayı tekrar yükle.",
       "confirmDelete": "Bu transkripsiyonu sil? Geri alınamaz.",
       "deleted": "Transkripsiyon silindi.",
       "deleteFailed": "Transkripsiyon silinemedi.",

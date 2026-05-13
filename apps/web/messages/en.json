@@ -428,6 +428,8 @@
       "statWords": "Words",
       "statSpeakers": "Speakers",
       "delete": "Delete transcription",
+      "audioMissingTitle": "Audio file is missing",
+      "audioMissingBody": "The stored audio for this transcript could not be loaded. The transcript text is intact but playback and PDF/DOCX export will not work. Delete this entry and re-upload the file.",
       "confirmDelete": "Delete this transcription? This cannot be undone.",
       "deleted": "Transcription deleted.",
       "deleteFailed": "Could not delete transcription.",
