@@ -1,2 +1,210 @@
-// Phase 1a: schema lands fully in 1b. Empty exports keep imports compiling.
-export {};
+import {
+  pgTable,
+  uuid,
+  text,
+  timestamp,
+  bigint,
+  numeric,
+  integer,
+  jsonb,
+  index,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+
+export const users = pgTable(
+  "users",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    email: text("email").notNull().unique(),
+    password: text("password").notNull(),
+    name: text("name"),
+    role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
+    status: text("status", { enum: ["unverified", "active", "suspended"] })
+      .notNull()
+      .default("unverified"),
+    tier: text("tier", { enum: ["free", "basic", "pro", "enterprise"] })
+      .notNull()
+      .default("free"),
+    elevenlabsApiKey: text("elevenlabs_api_key"),
+    elevenlabsPlan: text("elevenlabs_plan", {
+      enum: ["starter", "creator", "pro", "scale"],
+    }),
+    emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+    activatedAt: timestamp("activated_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    statusIdx: index("users_status_idx").on(t.status),
+    tierIdx: index("users_tier_idx").on(t.tier),
+  }),
+);
+
+export const emailVerifications = pgTable(
+  "email_verifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    userIdx: index("email_verifications_user_id_idx").on(t.userId),
+    expiresIdx: index("email_verifications_expires_at_idx").on(t.expiresAt),
+  }),
+);
+
+export const credits = pgTable("credits", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  balance: integer("balance").notNull().default(1000),
+  grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
+  exhaustedAt: timestamp("exhausted_at", { withTimezone: true }),
+});
+
+export const recordings = pgTable(
+  "recordings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    storageKey: text("storage_key").notNull(),
+    mimeType: text("mime_type").notNull(),
+    sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),
+    durationSec: numeric("duration_sec", { precision: 10, scale: 3 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    userCreatedIdx: index("recordings_user_id_created_at_idx").on(t.userId, t.createdAt),
+  }),
+);
+
+export const voices = pgTable(
+  "voices",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    recordingId: uuid("recording_id").references(() => recordings.id, {
+      onDelete: "set null",
+    }),
+    name: text("name").notNull(),
+    label: text("label").notNull(),
+    description: text("description"),
+    elevenLabsVoiceId: text("elevenlabs_voice_id").notNull(),
+    status: text("status", { enum: ["pending", "ready", "failed"] })
+      .notNull()
+      .default("pending"),
+    error: text("error"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    userCreatedIdx: index("voices_user_id_created_at_idx").on(t.userId, t.createdAt),
+    elevenLabsIdx: uniqueIndex("voices_elevenlabs_voice_id_idx").on(t.elevenLabsVoiceId),
+  }),
+);
+
+export const generations = pgTable(
+  "generations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    voiceId: uuid("voice_id")
+      .notNull()
+      .references(() => voices.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    storageKey: text("storage_key").notNull(),
+    mimeType: text("mime_type").notNull().default("audio/mpeg"),
+    sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),
+    durationSec: numeric("duration_sec", { precision: 10, scale: 3 }),
+    characterCount: integer("character_count").notNull(),
+    settings: jsonb("settings"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    userCreatedIdx: index("generations_user_id_created_at_idx").on(t.userId, t.createdAt),
+    voiceCreatedIdx: index("generations_voice_id_created_at_idx").on(t.voiceId, t.createdAt),
+  }),
+);
+
+export const adminAuditLog = pgTable(
+  "admin_audit_log",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    adminId: uuid("admin_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    adminCreatedIdx: index("admin_audit_log_admin_id_created_at_idx").on(
+      t.adminId,
+      t.createdAt,
+    ),
+    actionIdx: index("admin_audit_log_action_idx").on(t.action),
+  }),
+);
+
+export const usersRelations = relations(users, ({ many, one }) => ({
+  recordings: many(recordings),
+  voices: many(voices),
+  generations: many(generations),
+  emailVerifications: many(emailVerifications),
+  credits: one(credits, { fields: [users.id], references: [credits.userId] }),
+  adminAuditEntries: many(adminAuditLog),
+}));
+
+export const recordingsRelations = relations(recordings, ({ one, many }) => ({
+  user: one(users, { fields: [recordings.userId], references: [users.id] }),
+  voices: many(voices),
+}));
+
+export const voicesRelations = relations(voices, ({ one, many }) => ({
+  user: one(users, { fields: [voices.userId], references: [users.id] }),
+  recording: one(recordings, {
+    fields: [voices.recordingId],
+    references: [recordings.id],
+  }),
+  generations: many(generations),
+}));
+
+export const generationsRelations = relations(generations, ({ one }) => ({
+  user: one(users, { fields: [generations.userId], references: [users.id] }),
+  voice: one(voices, { fields: [generations.voiceId], references: [voices.id] }),
+}));
+
+export const emailVerificationsRelations = relations(emailVerifications, ({ one }) => ({
+  user: one(users, { fields: [emailVerifications.userId], references: [users.id] }),
+}));
+
+export const creditsRelations = relations(credits, ({ one }) => ({
+  user: one(users, { fields: [credits.userId], references: [users.id] }),
+}));
+
+export const adminAuditLogRelations = relations(adminAuditLog, ({ one }) => ({
+  admin: one(users, { fields: [adminAuditLog.adminId], references: [users.id] }),
+}));
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type EmailVerification = typeof emailVerifications.$inferSelect;
+export type Credit = typeof credits.$inferSelect;
+export type Recording = typeof recordings.$inferSelect;
+export type Voice = typeof voices.$inferSelect;
+export type Generation = typeof generations.$inferSelect;
+export type AdminAuditEntry = typeof adminAuditLog.$inferSelect;

@@ -8,9 +8,9 @@
     "lint": "echo \"lint not configured yet\" && exit 0",
     "typecheck": "bun --cwd apps/api typecheck && bun --cwd packages/db typecheck && bun --cwd packages/shared typecheck",
     "test": "bun test",
-    "db:generate": "bun --cwd packages/db db:generate",
-    "db:migrate": "bun --cwd packages/db db:migrate",
-    "db:seed": "bun --cwd packages/db db:seed",
+    "db:generate": "drizzle-kit generate --config=packages/db/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=packages/db/drizzle.config.ts",
+    "db:seed": "bun packages/db/src/seed.ts",
     "prepare": "simple-git-hooks"
   },
   "devDependencies": {
