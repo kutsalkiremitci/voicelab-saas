@@ -23,9 +23,6 @@ const schema = z.object({
 
   EMAIL_VERIFICATION_TOKEN_TTL_HOURS: z.coerce.number().int().positive().default(24),
 
-  ADMIN_SEED_EMAIL: z.string().email().optional(),
-  ADMIN_SEED_PASSWORD: z.string().min(8).optional(),
-
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
   STORAGE_LOCAL_PATH: z.string().default("./storage"),
   S3_BUCKET: z.string().optional(),
