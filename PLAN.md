@@ -23,7 +23,6 @@
 - [x] CI workflow stub (lint + typecheck + test)
 - [x] `simple-git-hooks`: pre-push runs `bun run test && bun run lint && bun run typecheck`
 - [x] Docker Compose for local Postgres + Redis + **Mailpit**
-- [ ] Operator's demo ElevenLabs account created and key in `.env`
 
 **Exit:** Empty monorepo, local DB up, CI runs on push.
 
