@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.next/
+.turbo/
+out/
+
+# Bun
+bun-debug-*
+
+# Env (keep .env.example)
+.env
+.env.*
+!.env.example
+
+# Local storage (StorageAdapter local driver)
+storage/
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Plan files (per-conversation, not part of repo history)
+.claude/plans/

@@ -1,0 +1,22 @@
+{
+  "name": "voicelab",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "echo \"no apps yet — phase 0\"",
+    "lint": "echo \"no lint yet — phase 0\" && exit 0",
+    "typecheck": "echo \"no typecheck yet — phase 0\" && exit 0",
+    "test": "echo \"no tests yet — phase 0\" && exit 0",
+    "prepare": "simple-git-hooks"
+  },
+  "devDependencies": {
+    "simple-git-hooks": "^2.11.1"
+  },
+  "simple-git-hooks": {
+    "pre-push": "bun run test && bun run lint && bun run typecheck"
+  },
+  "engines": {
+    "bun": ">=1.3.13"
+  }
+}
