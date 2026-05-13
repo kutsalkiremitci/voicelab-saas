@@ -4,14 +4,19 @@
   "version": "0.0.0",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "echo \"no apps yet — phase 0\"",
-    "lint": "echo \"no lint yet — phase 0\" && exit 0",
-    "typecheck": "echo \"no typecheck yet — phase 0\" && exit 0",
-    "test": "echo \"no tests yet — phase 0\" && exit 0",
+    "dev": "bun --hot apps/api/src/index.ts",
+    "lint": "echo \"lint not configured yet\" && exit 0",
+    "typecheck": "bun --cwd apps/api typecheck && bun --cwd packages/db typecheck && bun --cwd packages/shared typecheck",
+    "test": "bun test",
+    "db:generate": "bun --cwd packages/db db:generate",
+    "db:migrate": "bun --cwd packages/db db:migrate",
+    "db:seed": "bun --cwd packages/db db:seed",
     "prepare": "simple-git-hooks"
   },
   "devDependencies": {
-    "simple-git-hooks": "^2.11.1"
+    "@types/bun": "^1.1.14",
+    "simple-git-hooks": "^2.11.1",
+    "typescript": "^5.7.2"
   },
   "simple-git-hooks": {
     "pre-push": "bun run test && bun run lint && bun run typecheck"
