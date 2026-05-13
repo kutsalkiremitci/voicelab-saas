@@ -39,13 +39,14 @@ export const errorHandler: ErrorHandler = (err, c) => {
       err.status as ContentfulStatusCode,
     );
   }
-  if (err instanceof ZodError) {
+  if (err instanceof ZodError || (err as { name?: string })?.name === "ZodError") {
+    const zerr = err as ZodError;
     return c.json(
       {
         error: {
           code: "VALIDATION_ERROR",
           message: "Invalid input",
-          details: err.flatten().fieldErrors,
+          details: typeof zerr.flatten === "function" ? zerr.flatten().fieldErrors : undefined,
         },
       },
       422,
