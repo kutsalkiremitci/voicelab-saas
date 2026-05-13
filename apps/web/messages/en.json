@@ -243,8 +243,42 @@
     "recordings": "Recordings",
     "generations": "Generations",
     "credits": "Credits",
+    "usage": "Usage",
     "settings": "Settings",
     "collapse": "Collapse"
+  },
+  "usage": {
+    "title": "Usage",
+    "sub": "Every credit charge and grant on your account, oldest at the bottom.",
+    "empty": "No transactions yet.",
+    "loadMore": "Load more",
+    "noDescription": "—",
+    "filters": {
+      "operation": "Operation",
+      "type": "Type",
+      "allTypes": "All types",
+      "from": "From",
+      "to": "To",
+      "clear": "Clear"
+    },
+    "types": {
+      "charge": "Charge",
+      "grant": "Grant"
+    },
+    "col": {
+      "when": "When",
+      "operation": "Operation",
+      "description": "Description",
+      "amount": "Amount",
+      "balance": "Balance"
+    },
+    "ops": {
+      "transcribe": "Speech to Text",
+      "tts": "Text to Speech",
+      "s2s": "Voice Conversion",
+      "adminGrant": "Admin grant",
+      "adminRefund": "Admin refund"
+    }
   },
   "dashboard": {
     "greetingNight": "Good night",
@@ -398,6 +432,18 @@
     },
     "paidMeteringTitle": "Metered by your plan",
     "paidMeteringBody": "Paid plans are billed against your monthly transcription hours. Free credits do not apply.",
+    "model": "Model",
+    "models": {
+      "v2": {
+        "label": "Scribe v2",
+        "hint": "Latest. Best accuracy. Supports No-verbatim and keyword prompting."
+      },
+      "v1": {
+        "label": "Scribe v1",
+        "hint": "Production stable. Slightly older accuracy on rare languages."
+      },
+      "priceLine": "Both batch models bill at {perMin} credits/min (1:1 with $0.22/hour upstream)."
+    },
     "language": "Primary language",
     "languageDetect": "Detect (default)",
     "languageSearch": "Search languages…",

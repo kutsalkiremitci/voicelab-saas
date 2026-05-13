@@ -1,6 +1,10 @@
 import { sql, eq } from "drizzle-orm";
 import { db } from "../lib/db";
-import { credits } from "@voicelab/db/schema";
+import {
+  credits,
+  creditTransactions,
+  type CreditTransactionOperation,
+} from "@voicelab/db/schema";
 import { env } from "../env";
 import { AppError } from "../lib/errors";
 
@@ -25,6 +29,9 @@ export interface ChargeMetadata {
   transcriptionId?: string;
   durationSec?: number;
   reason?: string;
+  description?: string;
+  refType?: string;
+  refId?: string;
   [key: string]: unknown;
 }
 
@@ -67,14 +74,38 @@ export async function getFreeBalance(userId: string): Promise<number | null> {
   return row?.balance ?? null;
 }
 
+function operationToLedgerOp(op: FreeOperation): CreditTransactionOperation {
+  return op as CreditTransactionOperation;
+}
+
+export interface ChargeOptions {
+  operation: FreeOperation;
+  description?: string;
+  refType?: string;
+  refId?: string;
+  metadata?: Record<string, unknown>;
+}
+
 export async function chargeFreeUser(
   userId: string,
   amount: number,
-  _metadata: ChargeMetadata = {},
+  options: ChargeMetadata | (ChargeOptions & ChargeMetadata) = {},
 ): Promise<number> {
   if (!Number.isFinite(amount) || amount < 0) {
     throw new AppError("INVALID_CHARGE", "Charge amount must be non-negative", 400);
   }
+
+  const opts = options as ChargeMetadata & Partial<ChargeOptions>;
+  // Best-effort inference of the operation from metadata when caller did not
+  // pass `operation` explicitly (keeps the older call-sites working).
+  const operation: CreditTransactionOperation = opts.operation
+    ? operationToLedgerOp(opts.operation)
+    : opts.transcriptionId
+      ? "transcribe"
+      : opts.generationId
+        ? "tts"
+        : "tts";
+
   return db.transaction(async (tx) => {
     const rows = await tx.execute<{
       user_id: string;
@@ -98,6 +129,68 @@ export async function chargeFreeUser(
       .update(credits)
       .set({ balance: newBalance, exhaustedAt })
       .where(eq(credits.userId, userId));
+
+    if (amount > 0) {
+      await tx.insert(creditTransactions).values({
+        userId,
+        operation,
+        type: "charge",
+        amount,
+        balanceAfter: newBalance,
+        description: opts.description ?? opts.reason ?? null,
+        refType: opts.refType ?? (opts.transcriptionId ? "transcription" : opts.generationId ? "generation" : null),
+        refId: opts.refId ?? opts.transcriptionId ?? opts.generationId ?? null,
+        metadata: opts.metadata ?? null,
+      });
+    }
+
+    return newBalance;
+  });
+}
+
+export interface GrantOptions {
+  operation?: "admin_grant" | "admin_refund";
+  description?: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Add credits to a user's pool, recording the bump in the ledger.
+ * Used by admin grants and the email-verification starter grant.
+ */
+export async function grantCredits(
+  userId: string,
+  amount: number,
+  options: GrantOptions = {},
+): Promise<number> {
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new AppError("INVALID_GRANT", "Grant amount must be positive", 400);
+  }
+  return db.transaction(async (tx) => {
+    const rows = await tx.execute<{ user_id: string; balance: number }>(
+      sql`SELECT user_id, balance FROM credits WHERE user_id = ${userId} FOR UPDATE`,
+    );
+    const current = rows[0];
+    let newBalance: number;
+    if (!current) {
+      await tx.insert(credits).values({ userId, balance: amount });
+      newBalance = amount;
+    } else {
+      newBalance = current.balance + amount;
+      await tx
+        .update(credits)
+        .set({ balance: newBalance, exhaustedAt: null })
+        .where(eq(credits.userId, userId));
+    }
+    await tx.insert(creditTransactions).values({
+      userId,
+      operation: options.operation ?? "admin_grant",
+      type: "grant",
+      amount,
+      balanceAfter: newBalance,
+      description: options.description ?? null,
+      metadata: options.metadata ?? null,
+    });
     return newBalance;
   });
 }

@@ -243,8 +243,42 @@
     "recordings": "Kayıtlar",
     "generations": "Üretimler",
     "credits": "Krediler",
+    "usage": "Kullanım",
     "settings": "Ayarlar",
     "collapse": "Daralt"
+  },
+  "usage": {
+    "title": "Kullanım",
+    "sub": "Hesabındaki tüm kredi düşümleri ve eklemeleri, en yeniden eskiye.",
+    "empty": "Henüz işlem yok.",
+    "loadMore": "Daha fazla yükle",
+    "noDescription": "—",
+    "filters": {
+      "operation": "İşlem",
+      "type": "Tip",
+      "allTypes": "Tüm tipler",
+      "from": "Başlangıç",
+      "to": "Bitiş",
+      "clear": "Temizle"
+    },
+    "types": {
+      "charge": "Düşüm",
+      "grant": "Ekleme"
+    },
+    "col": {
+      "when": "Tarih",
+      "operation": "İşlem",
+      "description": "Açıklama",
+      "amount": "Miktar",
+      "balance": "Bakiye"
+    },
+    "ops": {
+      "transcribe": "Sesten Metne",
+      "tts": "Metinden Sese",
+      "s2s": "Ses Dönüştürme",
+      "adminGrant": "Admin ekleme",
+      "adminRefund": "Admin iadesi"
+    }
   },
   "dashboard": {
     "greetingNight": "İyi geceler",
@@ -398,6 +432,18 @@
     },
     "paidMeteringTitle": "Planınla ölçülüyor",
     "paidMeteringBody": "Ücretli planlar aylık transkripsiyon saatinden düşülür. Ücretsiz krediler uygulanmaz.",
+    "model": "Model",
+    "models": {
+      "v2": {
+        "label": "Scribe v2",
+        "hint": "En güncel. En yüksek doğruluk. No-verbatim ve anahtar kelime desteği."
+      },
+      "v1": {
+        "label": "Scribe v1",
+        "hint": "Üretimde stabil. Nadir dillerde biraz daha eski doğruluk."
+      },
+      "priceLine": "İki batch model de {perMin} kredi/dk ile faturalanır ($0.22/saat upstream 1:1)."
+    },
     "language": "Birincil dil",
     "languageDetect": "Otomatik algıla (varsayılan)",
     "languageSearch": "Dil ara…",

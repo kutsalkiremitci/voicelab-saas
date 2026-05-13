@@ -199,6 +199,31 @@ export const transcriptions = pgTable(
   }),
 );
 
+export const creditTransactions = pgTable(
+  "credit_transactions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    operation: text("operation", {
+      enum: ["transcribe", "tts", "s2s", "admin_grant", "admin_refund"],
+    }).notNull(),
+    type: text("type", { enum: ["charge", "grant"] }).notNull(),
+    amount: integer("amount").notNull(),
+    balanceAfter: integer("balance_after").notNull(),
+    description: text("description"),
+    refType: text("ref_type"),
+    refId: uuid("ref_id"),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    userCreatedIdx: index("credit_transactions_user_id_created_at_idx").on(t.userId, t.createdAt),
+    operationIdx: index("credit_transactions_operation_idx").on(t.operation),
+  }),
+);
+
 export const adminAuditLog = pgTable(
   "admin_audit_log",
   {
@@ -231,6 +256,10 @@ export const usersRelations = relations(users, ({ many, one }) => ({
 
 export const transcriptionsRelations = relations(transcriptions, ({ one }) => ({
   user: one(users, { fields: [transcriptions.userId], references: [users.id] }),
+}));
+
+export const creditTransactionsRelations = relations(creditTransactions, ({ one }) => ({
+  user: one(users, { fields: [creditTransactions.userId], references: [users.id] }),
 }));
 
 export const recordingsRelations = relations(recordings, ({ one, many }) => ({
@@ -280,6 +309,10 @@ export type Generation = typeof generations.$inferSelect;
 export type AdminAuditEntry = typeof adminAuditLog.$inferSelect;
 export type Transcription = typeof transcriptions.$inferSelect;
 export type NewTranscription = typeof transcriptions.$inferInsert;
+export type CreditTransaction = typeof creditTransactions.$inferSelect;
+export type NewCreditTransaction = typeof creditTransactions.$inferInsert;
+export type CreditTransactionOperation = CreditTransaction["operation"];
+export type CreditTransactionType = CreditTransaction["type"];
 
 export interface TranscribedWord {
   text: string;

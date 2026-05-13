@@ -7,6 +7,7 @@ import { AppError } from "../../lib/errors";
 import { requireAuth, type AuthVariables } from "../../middleware/auth";
 import { requireAdmin } from "../../middleware/admin";
 import { encryptApiKey } from "../../services/encryption";
+import { grantCredits } from "../../services/free-credits";
 import {
   setApiKeySchema,
   patchUserSchema,
@@ -211,23 +212,12 @@ route.post("/:id/credits", async (c) => {
 
   const target = await db.query.users.findFirst({ where: eq(users.id, id) });
   if (!target) throw new AppError("USER_NOT_FOUND", "User not found", 404);
-  if (target.tier !== "free") {
-    throw new AppError("USER_NOT_FREE", "Credit grants only apply to Free users", 409);
-  }
 
-  const existing = await db.query.credits.findFirst({
-    where: eq(credits.userId, id),
-    columns: { balance: true },
+  await grantCredits(id, body.amount, {
+    operation: "admin_grant",
+    description: body.reason ?? body.note ?? undefined,
+    metadata: { adminId, reason: body.reason ?? null, note: body.note ?? null },
   });
-  if (existing) {
-    await db
-      .update(credits)
-      .set({ balance: existing.balance + body.amount, exhaustedAt: null })
-      .where(eq(credits.userId, id));
-  } else {
-    await db.insert(credits).values({ userId: id, balance: body.amount });
-  }
-
   const updated = await db.query.credits.findFirst({ where: eq(credits.userId, id) });
   await writeAudit(adminId, "GRANT_FREE_CREDITS", {
     targetUserId: id,
@@ -256,12 +246,10 @@ route.post("/:id/manual-verify", async (c) => {
         updatedAt: new Date(),
       })
       .where(eq(users.id, id));
-    if (target.tier === "free") {
-      await tx
-        .insert(credits)
-        .values({ userId: id, balance: 1000 })
-        .onConflictDoNothing();
-    }
+    await tx
+      .insert(credits)
+      .values({ userId: id, balance: 1000 })
+      .onConflictDoNothing();
   });
   await writeAudit(adminId, "MANUAL_VERIFY", { targetUserId: id });
   const updated = await db.query.users.findFirst({ where: eq(users.id, id) });

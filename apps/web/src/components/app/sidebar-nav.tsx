@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
+  Activity,
   AudioLines,
   CreditCard,
   FileText,
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/app/recordings", labelKey: "nav.recordings", Icon: Folder },
   { href: "/app/generations", labelKey: "nav.generations", Icon: AudioLines },
   { href: "/app/credits", labelKey: "nav.credits", Icon: CreditCard },
+  { href: "/app/usage", labelKey: "nav.usage", Icon: Activity },
   { href: "/app/settings", labelKey: "nav.settings", Icon: Settings },
 ];
 

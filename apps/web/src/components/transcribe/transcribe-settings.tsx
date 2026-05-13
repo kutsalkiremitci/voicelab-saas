@@ -5,10 +5,20 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { LanguageCombobox } from "./language-combobox";
 import { KeywordChipInput } from "./keyword-chip-input";
 
+export type TranscribeModel = "scribe_v1" | "scribe_v2";
+
 export interface TranscribeSettingsValue {
+  model: TranscribeModel;
   languageCode: string | undefined;
   tagAudioEvents: boolean;
   noVerbatim: boolean;
@@ -19,6 +29,7 @@ export interface TranscribeSettingsValue {
 }
 
 export const DEFAULT_TRANSCRIBE_SETTINGS: TranscribeSettingsValue = {
+  model: "scribe_v2",
   languageCode: undefined,
   tagAudioEvents: false,
   noVerbatim: false,
@@ -80,6 +91,40 @@ export function TranscribeSettings({ value, onChange, disabled }: Props) {
         >
           {t("transcribe.reset")}
         </Button>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">{t("transcribe.model")}</Label>
+        <Select
+          value={value.model}
+          onValueChange={(v) => set({ model: v as TranscribeModel })}
+          disabled={disabled}
+        >
+          <SelectTrigger className="h-9 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="scribe_v2">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{t("transcribe.models.v2.label")}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {t("transcribe.models.v2.hint")}
+                </span>
+              </div>
+            </SelectItem>
+            <SelectItem value="scribe_v1">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{t("transcribe.models.v1.label")}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {t("transcribe.models.v1.hint")}
+                </span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-[11px] text-muted-foreground">
+          {t("transcribe.models.priceLine", { perMin: 20 })}
+        </p>
       </div>
 
       <div className="space-y-1.5">

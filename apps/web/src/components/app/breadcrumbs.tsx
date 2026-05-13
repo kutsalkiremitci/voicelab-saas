@@ -15,6 +15,7 @@ const LABEL_KEYS: Record<string, string> = {
   recordings: "nav.recordings",
   generations: "nav.generations",
   credits: "nav.credits",
+  usage: "nav.usage",
   settings: "nav.settings",
 };
 

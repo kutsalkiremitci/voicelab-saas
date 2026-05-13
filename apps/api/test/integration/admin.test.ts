@@ -209,7 +209,7 @@ describe("POST /admin/users/:id/credits", () => {
     expect(credit?.balance).toBe(350);
   });
 
-  test("Paid user → 409 USER_NOT_FREE", async () => {
+  test("Paid user: admin grant lands in credits pool (no tier gate)", async () => {
     const admin = await makeUser({ role: "admin" });
     const target = await makeUser({ tier: "pro" });
     const res = await app.request(`/api/v1/admin/users/${target.id}/credits`, {
@@ -220,7 +220,9 @@ describe("POST /admin/users/:id/credits", () => {
       },
       body: JSON.stringify({ amount: 100 }),
     });
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(201);
+    const credit = await db.query.credits.findFirst({ where: eq(credits.userId, target.id) });
+    expect(credit?.balance).toBe(100);
   });
 });
 

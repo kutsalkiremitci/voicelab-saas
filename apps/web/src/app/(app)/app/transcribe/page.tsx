@@ -163,7 +163,7 @@ export default function TranscribeCreatePage() {
     form.append("diarize", String(settings.diarize));
     if (settings.numSpeakers !== undefined) form.append("numSpeakers", String(settings.numSpeakers));
     form.append("keyterms", JSON.stringify(settings.keyterms));
-    form.append("model", "scribe_v2");
+    form.append("model", settings.model);
 
     try {
       const res = await uploadRecording<{ transcription: { id: string } }>(

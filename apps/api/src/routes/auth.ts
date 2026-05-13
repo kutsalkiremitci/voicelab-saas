@@ -17,6 +17,7 @@ import {
   consumeVerificationToken,
   invalidateOpenTokens,
 } from "../services/verification";
+import { grantCredits } from "../services/free-credits";
 import { emailService } from "../services/email";
 import { rateLimit } from "../middleware/rate-limit";
 import { requireAuth, type AuthVariables } from "../middleware/auth";
@@ -111,16 +112,20 @@ auth.get("/verify", async (c) => {
     return c.redirect(`${env.APP_URL}/verify-email?error=invalid-or-expired`, 302);
   }
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(users)
-      .set({ status: "active", emailVerifiedAt: new Date(), updatedAt: new Date() })
-      .where(eq(users.id, userId));
-    await tx
-      .insert(credits)
-      .values({ userId, balance: env.FREE_TIER_INITIAL_CREDITS })
-      .onConflictDoNothing({ target: credits.userId });
+  const alreadyHadCredits = await db.query.credits.findFirst({
+    where: eq(credits.userId, userId),
+    columns: { userId: true },
   });
+  await db
+    .update(users)
+    .set({ status: "active", emailVerifiedAt: new Date(), updatedAt: new Date() })
+    .where(eq(users.id, userId));
+  if (!alreadyHadCredits) {
+    await grantCredits(userId, env.FREE_TIER_INITIAL_CREDITS, {
+      operation: "admin_grant",
+      description: "Starter credits on email verification",
+    });
+  }
 
   return c.redirect(`${env.APP_URL}/login?verified=1`, 302);
 });
