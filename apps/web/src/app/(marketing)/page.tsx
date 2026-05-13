@@ -1,12 +1,29 @@
+import type { Metadata } from "next";
+import { Hero } from "@/components/marketing/hero";
+import { FeatureGrid } from "@/components/marketing/feature-grid";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { PricingSection } from "@/components/marketing/pricing-section";
+import { WhoWeAre } from "@/components/marketing/who-we-are";
+
+export const metadata: Metadata = {
+  title: "VoiceLab — Bring your voice into your workflow",
+  description:
+    "Clone your voice once. Generate natural-sounding audio in any tone, any language. 1,000 free credits on sign-up.",
+  openGraph: {
+    title: "VoiceLab",
+    description: "Managed AI voice generation. Clone, generate, ship.",
+    type: "website",
+  },
+};
+
 export default function HomePage() {
   return (
-    <section className="mx-auto max-w-3xl px-4 py-24 text-center">
-      <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-        Bring your voice into your workflow.
-      </h1>
-      <p className="mt-4 text-base text-muted-foreground">
-        Verified email, 1,000 free credits, instant clones. Upgrade when you outgrow Free.
-      </p>
-    </section>
+    <>
+      <Hero />
+      <FeatureGrid />
+      <HowItWorks />
+      <PricingSection />
+      <WhoWeAre />
+    </>
   );
 }

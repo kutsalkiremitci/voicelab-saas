@@ -15,7 +15,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: { default: "VoiceLab", template: "%s · VoiceLab" },
-  description: "Managed AI voice generation",
+  description: "Managed AI voice generation. Clone your voice, generate hours of audio.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  openGraph: {
+    siteName: "VoiceLab",
+    type: "website",
+    locale: "en_US",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

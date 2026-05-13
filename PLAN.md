@@ -197,16 +197,16 @@
 
 **Skills:** `frontend-development`, `test-driven-development`
 
-- [ ] `/` landing
-  - [ ] Hero, features (3-4 cards), how it works (3 steps)
-  - [ ] **Pricing section: 4 tier cards** (Free, Basic $15, Pro $59 [Most Popular], Enterprise [Contact sales])
-  - [ ] "Who we are" section
-  - [ ] Footer
-- [ ] `/pricing` standalone page (same cards, larger, FAQ)
-- [ ] Enterprise card CTA: `mailto:` link
-- [ ] SEO meta + OpenGraph
-- [ ] Mobile responsive
-- [ ] **No mention of upstream provider anywhere**
+- [x] `/` landing
+  - [x] Hero, features (3-4 cards), how it works (3 steps)
+  - [x] **Pricing section: 4 tier cards** (Free, Basic $15, Pro $59 [Most Popular], Enterprise [Contact sales])
+  - [x] "Who we are" section
+  - [x] Footer
+- [x] `/pricing` standalone page (same cards, larger, FAQ)
+- [x] Enterprise card CTA: `mailto:` link
+- [x] SEO meta + OpenGraph
+- [x] Mobile responsive
+- [x] **No mention of upstream provider anywhere**
 
 **Exit:** Public site with concrete pricing; Enterprise inquiries route to operator email.
 

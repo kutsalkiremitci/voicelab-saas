@@ -26,8 +26,21 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
         </nav>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} VoiceLab
+      <footer className="border-t border-border">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-8 text-xs text-muted-foreground sm:flex-row">
+          <span>© {new Date().getFullYear()} VoiceLab</span>
+          <div className="flex items-center gap-4">
+            <Link href="/pricing" className="hover:text-foreground">
+              Pricing
+            </Link>
+            <Link href="/login" className="hover:text-foreground">
+              Sign in
+            </Link>
+            <Link href="mailto:hello@voicelab.local" className="hover:text-foreground">
+              Contact
+            </Link>
+          </div>
+        </div>
       </footer>
     </div>
   );
