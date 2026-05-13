@@ -11,6 +11,8 @@ export interface StorageAdapter {
   ): Promise<PutResult>;
   get(key: string): Promise<ReadableStream>;
   delete(key: string): Promise<void>;
+  /** Recursively remove every object under a key prefix (e.g. `audio/${userId}`). */
+  deletePrefix?(prefix: string): Promise<void>;
   exists(key: string): Promise<boolean>;
   totalSize?(prefix?: string): Promise<number>;
   getSignedUrl?(key: string, expiresIn: number): Promise<string>;

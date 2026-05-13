@@ -1,4 +1,4 @@
-import { mkdir, unlink, access, stat, writeFile } from "node:fs/promises";
+import { mkdir, unlink, access, stat, writeFile, rm } from "node:fs/promises";
 import { createReadStream, createWriteStream } from "node:fs";
 import { Readable } from "node:stream";
 import path from "node:path";
@@ -53,6 +53,12 @@ export class LocalAdapter implements StorageAdapter {
 
   async delete(key: string): Promise<void> {
     await unlink(this.fullPath(key)).catch(() => {});
+  }
+
+  async deletePrefix(prefix: string): Promise<void> {
+    if (!prefix || prefix === "/" || prefix === ".") return;
+    const target = this.fullPath(prefix);
+    await rm(target, { recursive: true, force: true });
   }
 
   async exists(key: string): Promise<boolean> {

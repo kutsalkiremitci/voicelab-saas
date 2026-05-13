@@ -16,8 +16,9 @@ bun-debug-*
 .env.*
 !.env.example
 
-# Local storage (StorageAdapter local driver) — root only, not source dirs
+# Local storage (StorageAdapter local driver) — root + any app subdir
 /storage/
+apps/*/storage/
 
 # Logs
 *.log
