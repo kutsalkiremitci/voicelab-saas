@@ -13,7 +13,7 @@
   --color-secondary-foreground: hsl(0 0% 9%);
   --color-muted: hsl(0 0% 96%);
   --color-muted-foreground: hsl(0 0% 45%);
-  --color-accent: hsl(220 90% 56%);
+  --color-accent: hsl(217 65% 54%);
   --color-accent-foreground: hsl(0 0% 98%);
   --color-destructive: hsl(0 84% 60%);
   --color-destructive-foreground: hsl(0 0% 98%);
@@ -39,7 +39,7 @@
   --color-secondary-foreground: hsl(0 0% 98%);
   --color-muted: hsl(0 0% 10%);
   --color-muted-foreground: hsl(0 0% 64%);
-  --color-accent: hsl(220 90% 65%);
+  --color-accent: hsl(217 60% 65%);
   --color-accent-foreground: hsl(0 0% 9%);
   --color-destructive: hsl(0 70% 50%);
   --color-destructive-foreground: hsl(0 0% 98%);
@@ -57,3 +57,33 @@ html, body {
 * {
   border-color: var(--color-border);
 }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-down {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50%      { transform: scaleY(1); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-up    { animation: fade-up 0.5s ease-out; }
+.animate-fade-down  { animation: fade-down 0.5s ease-out; }
+.animate-wave       { animation: wave 1s ease-in-out infinite; }
+.animate-float-slow { animation: float-slow 6s ease-in-out infinite; }

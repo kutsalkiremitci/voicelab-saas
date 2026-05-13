@@ -1,0 +1,430 @@
+{
+  "meta": {
+    "siteName": "VoiceLab",
+    "defaultTitle": "VoiceLab — Sesini iş akışına taşı",
+    "defaultDescription": "Sesini bir kez klonla. Her tonda ve her dilde saatlerce doğal ses üret. Kayıt olduğunda 1.000 ücretsiz kredi.",
+    "keywords": "ses klonlama, metinden sese, yapay zeka ses üretimi, konuşma sentezi, ses AI, ses prodüksiyonu, podcast sesi, seslendirme, dublaj, çok dilli TTS",
+    "ogTitle": "VoiceLab",
+    "ogDescription": "Yönetilen AI ses üretimi. Klonla, üret, yayınla.",
+    "pages": {
+      "home": { "title": "VoiceLab — Sesini iş akışına taşı", "description": "Sesini bir kez klonla. Saatlerce doğal ses üret. Kayıt olduğunda 1.000 ücretsiz kredi." },
+      "pricing": { "title": "Fiyatlandırma", "description": "Basit ve öngörülebilir fiyatlandırma. Ücretsiz başla, ihtiyaca göre yükselt. İstediğin zaman iptal et." },
+      "login": { "title": "Giriş yap", "description": "Seslerini, kayıtlarını ve üretimlerini yönetmek için VoiceLab'a giriş yap." },
+      "register": { "title": "Hesap oluştur", "description": "VoiceLab'a kayıt ol. E-postanı doğrula ve 1.000 ücretsiz krediyi kap." },
+      "verifyEmail": { "title": "E-postanı doğrula", "description": "Hesabını doğrulamak için gelen kutunu kontrol et." },
+      "dashboard": { "title": "Panel", "description": "VoiceLab çalışma alanın." },
+      "tts": { "title": "Metinden Sese", "description": "Metinden doğal ses üret." },
+      "transcribe": { "title": "Sesten Metne", "description": "Ses kayıtlarını metne dönüştür." },
+      "voiceClone": { "title": "Ses Klonlama", "description": "Klonlanmış seslerini yönet." },
+      "recordings": { "title": "Kayıtlar", "description": "Ses örneklerini yakala ve yönet." },
+      "generations": { "title": "Üretimler", "description": "Ürettiğin tüm sesler." },
+      "credits": { "title": "Krediler", "description": "Bakiyeni, planını ve kullanımını yönet." },
+      "settings": { "title": "Ayarlar", "description": "Hesap profili, plan ve tercihler." },
+      "checkout": { "title": "Ödeme", "description": "Aboneliğini tamamla." }
+    }
+  },
+  "common": {
+    "back": "Geri",
+    "backToSite": "Siteye dön",
+    "signIn": "Giriş yap",
+    "signUp": "Kayıt ol",
+    "signOut": "Çıkış yap",
+    "getStarted": "Hemen başla",
+    "getStartedFree": "Ücretsiz başla",
+    "loading": "Yükleniyor…",
+    "noResults": "Sonuç yok.",
+    "credits": "kredi",
+    "language": "Dil",
+    "theme": "Tema",
+    "lightTheme": "Açık",
+    "darkTheme": "Koyu"
+  },
+  "header": {
+    "features": "Özellikler",
+    "howItWorks": "Nasıl çalışır",
+    "pricing": "Fiyatlandırma"
+  },
+  "hero": {
+    "badge": "Kayıt olduğunda 1.000 ücretsiz kredi",
+    "headingPrefix": "Ses klonlama:",
+    "rotating": ["podcast'ler", "videolar", "sesli kitaplar", "fragmanlar", "reklamlar", "eğitimler"],
+    "sub": "Tek bir dakika kaydet. Her tonda ve her dilde saatlerce doğal ses üret. Fikirden son kese, sesin seninle ölçeklensin.",
+    "ctaPrimary": "Ücretsiz başla",
+    "ctaSecondary": "Nasıl çalışır",
+    "trustNoCard": "Kredi kartı gerekmez",
+    "trustCancel": "İstediğin zaman iptal et",
+    "trustYours": "Sesin sana ait kalır"
+  },
+  "features": {
+    "eyebrow": "Özellikler",
+    "heading": "Ses üretmek için ihtiyacın olan her şey",
+    "sub": "Klonlama, üretim ve dönüştürme için tek bir akış — birden fazla araç yok.",
+    "items": {
+      "cloneTitle": "Bir kez kaydet, sonsuza dek klonla",
+      "cloneBody": "Sesinden temiz bir dakika yakala. Metinden her tonda saatlerce doğal ses üret.",
+      "fidelityTitle": "Stüdyo kalitesinde sadakat",
+      "fidelityBody": "Varsayılan sesler gerçek hissi verir. Pro klonlama tını dışında ritmi, nefesi ve tonlamayı yakalar.",
+      "multilingualTitle": "Varsayılan olarak çok dilli",
+      "multilingualBody": "Bugün Türkçe, yarın İngilizce, gelecek hafta İspanyolca — aynı ses, ek kurulum yok.",
+      "conversionTitle": "Ses Dönüştürme",
+      "conversionBody": "Herhangi bir sesi yükle, aynı performansı kendi sesinle geri al. Duyguyu ve zamanlamayı koru."
+    }
+  },
+  "how": {
+    "eyebrow": "Nasıl çalışır",
+    "heading": "Üç adım. Karmaşa yok.",
+    "sub": "Fikirden son sese dakikalar içinde — günler değil.",
+    "step1Title": "Kayıt ol & doğrula",
+    "step1Body": "E-posta onayı hesabını aktifleştirir ve 1.000 ücretsiz krediyi açar.",
+    "step2Title": "Kaydet ya da ses seç",
+    "step2Body": "Tarayıcı stüdyoda kaydet, ya da profesyonel ses kataloğundan başla.",
+    "step3Title": "Üret & yayınla",
+    "step3Body": "Metni yaz ya da yapıştır, ayarları ayarla, MP3'ü editörüne ver. Saniyeler içinde biter.",
+    "statAvgTime": "Ortalama üretim süresi",
+    "statLangs": "Desteklenen dil",
+    "statFreeCredits": "Kayıt olunca ücretsiz"
+  },
+  "pricing": {
+    "eyebrow": "Fiyatlandırma",
+    "heading": "Basit ve öngörülebilir fiyatlandırma",
+    "sub": "Ücretsiz başla, gerek duyduğunda yükselt. İstediğin zaman iptal et — soru sormayız.",
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "save": "%20 indirim",
+    "footnote": "Tüm fiyatlar USD cinsindendir. Özel bir şey mi lazım?",
+    "talkToUs": "Bizimle iletişime geç",
+    "billedAnnually": "Yıllık faturalandırılır",
+    "perYear": "yıl",
+    "perMonth": "/ay",
+    "oneTimeGrant": "Doğrulamada tek seferlik hediye",
+    "talkVolume": "Hacim için bizimle konuş",
+    "mostPopular": "En popüler",
+    "tiers": {
+      "free": {
+        "tagline": "VoiceLab'ı baştan sona taahhütsüz dene.",
+        "features": [
+          "E-posta doğrulamasında bir kez verilen 1.000 kredi",
+          "Ses kataloğu",
+          "Metinden sese üretim",
+          "MP3 128 kbps çıkış"
+        ],
+        "cta": "Ücretsiz başla"
+      },
+      "basic": {
+        "tagline": "Kendi sesini klonla, üretim ölçeğinde ses üret.",
+        "features": [
+          "Aylık 30.000 kredi",
+          "Hızlı Ses Klonlama",
+          "Ses Dönüştürme (sesten sese)",
+          "Çok dilli dublaj",
+          "MP3 128 kbps çıkış"
+        ],
+        "cta": "Basic'e geç"
+      },
+      "pro": {
+        "tagline": "Yaratıcılar ve ekipler için stüdyo kalitesinde sadakat.",
+        "features": [
+          "Aylık 121.000 kredi",
+          "Hızlı + Stüdyo Ses Klonlama",
+          "Ses Dönüştürme",
+          "Çok dilli dublaj",
+          "MP3 192 kbps çıkış",
+          "Öncelikli destek"
+        ],
+        "cta": "Pro'ya geç"
+      },
+      "enterprise": {
+        "tagline": "Hacimli krediler, stüdyo kalitesinde dışa aktarım, özel destek.",
+        "features": [
+          "Özel kredi tahsisi",
+          "Pro'daki her şey",
+          "44.1 kHz stüdyo PCM çıkış",
+          "SLA + özel başarı yöneticisi"
+        ],
+        "cta": "Satışla iletişime geç"
+      }
+    },
+    "page": {
+      "heroEyebrow": "Fiyatlandırma",
+      "heroHeading": "Seninle ölçeklenen fiyatlar.",
+      "heroSub": "1.000 kredi ile ücretsiz dene. Üretimin arttığında yükselt. İstediğin zaman iptal et — sesin ve klonların seninle kalır.",
+      "faqEyebrow": "Sorular",
+      "faqHeading": "Sıkça sorulan",
+      "faqSub": "Kayıt olmadan önce en çok sorulanlara hızlı yanıtlar.",
+      "faq": [
+        { "q": "Kredi nedir?", "a": "Bir kredi, üretilen konuşmanın yaklaşık bir karakterini karşılar. 300 kelimelik bir senaryo yaklaşık 1.800 kredi tüketir. Ses klonlama ve dönüştürme ücretli planlarda kredi gerektirmez." },
+        { "q": "Daha sonra plan değiştirebilir miyim?", "a": "Evet. Her zaman yükselt ya da indir. Farkı oranlarız ve kullanılmayan kredilerin geçerli dönem için devreder." },
+        { "q": "İptal edersem ses klonlarıma ne olur?", "a": "Kayıtların ve klonların hesabında salt-okunur kalır. Üretimler yenilenmez ama yaptığın her şey indirilebilir kalır. İstediğin zaman tekrar abone ol." },
+        { "q": "İade veriyor musunuz?", "a": "İlk 14 gün içinde bir şey yolunda gitmezse bize yaz, tüm ayı iade ederiz — soru yok, sürtünme yok." },
+        { "q": "Ses verilerim güvende mi?", "a": "Kayıtların şifreli olarak saklanır. Sesini asla paylaşmaz, satmaz ya da eğitim için kullanmayız. Bir klonu sildiğinde model ve kaynak ses 24 saat içinde tamamen kaybolur." },
+        { "q": "İstediğim zaman iptal edebilir miyim?", "a": "Evet. Ayarlardan tek tıkla. Tutma dansı, e-posta anketi yok — aboneliğin mevcut dönemin sonunda biter." }
+      ]
+    }
+  },
+  "whoWeAre": {
+    "heading": "Yayınlayan insanlar tarafından inşa edildi",
+    "body": "VoiceLab küçük, operatör tarafından yönetilen bir stüdyodur. Ses kalitesi, hızlı geri dönüş ve öngörülebilir fiyatlandırma konusunda takıntılıyız. Veriler olmaması gereken yere gitmez. Kayıtların ve klonların sana aittir — istediğin zaman sil ve sonsuza kadar yok olsunlar."
+  },
+  "finalCta": {
+    "badge": "Yayınlamaya hazır mısın?",
+    "headingPrefix": "Sesini",
+    "headingHighlight": "her projeye taşı.",
+    "sub": "E-postanı doğruladığın anda 1.000 ücretsiz kredi. Kredi kartı yok. İki dakikadan kısa sürede üretmeye başla.",
+    "ctaPrimary": "Ücretsiz başla",
+    "ctaSecondary": "Fiyatları gör"
+  },
+  "footer": {
+    "tagline": "Yönetilen AI ses üretimi. Klonla, üret, yayınla.",
+    "product": "Ürün",
+    "account": "Hesap",
+    "contact": "İletişim",
+    "rights": "Tüm hakları saklıdır.",
+    "operatedBy": "Tarafından yürütülmektedir:"
+  },
+  "cookie": {
+    "title": "Çerez kullanıyoruz",
+    "body": "Zorunlu çerezler oturumunu açık tutar. İsteğe bağlı olanlar hangi özellikleri en çok kullandığını anlamamıza yardımcı olur. Bunu istediğin zaman değiştirebilirsin.",
+    "learnMore": "Daha fazla bilgi",
+    "decline": "Reddet",
+    "accept": "Hepsini kabul et"
+  },
+  "auth": {
+    "signinHeading": "VoiceLab'a giriş yap",
+    "signinSub": "Tekrar hoş geldin — sesini iş akışına ekleyelim.",
+    "signupHeading": "Hesabını oluştur",
+    "signupSub": "E-postanı doğrula ve 1.000 ücretsiz krediyi kap. Kart gerekmez.",
+    "email": "E-posta",
+    "emailPlaceholder": "sen@ornek.com",
+    "password": "Şifre",
+    "passwordPlaceholder": "••••••••",
+    "passwordSignupPlaceholder": "En az 8 karakter",
+    "name": "Ad",
+    "nameOptional": "isteğe bağlı",
+    "namePlaceholder": "Adın",
+    "submitSignin": "Giriş yap",
+    "submitSigninLoading": "Giriş yapılıyor…",
+    "submitSignup": "Hesap oluştur",
+    "submitSignupLoading": "Hesap oluşturuluyor…",
+    "noAccount": "Hesabın yok mu?",
+    "hasAccount": "Zaten hesabın var mı?",
+    "emailVerified": "E-posta doğrulandı — şimdi giriş yapabilirsin.",
+    "termsNotice": "Hesap oluşturarak hizmet şartlarımızı ve gizlilik politikamızı kabul etmiş olursun.",
+    "errSuspended": "Hesabın askıya alındı. Destekle iletişime geç.",
+    "errInvalidCredentials": "E-posta ya da şifre geçersiz.",
+    "errRateLimited": "Çok fazla giriş denemesi. Birazdan tekrar dene.",
+    "errSigninGeneric": "Giriş başarısız. Lütfen tekrar dene.",
+    "errEmailTaken": "Bu e-posta zaten kayıtlı. Giriş yapmayı dene.",
+    "errSignupRateLimited": "Çok fazla kayıt denemesi. Daha sonra tekrar dene.",
+    "errValidation": "Lütfen formu kontrol et.",
+    "errSignupGeneric": "Kayıt başarısız. Lütfen tekrar dene.",
+    "aside": {
+      "signinHeading": "Sesine tekrar hoş geldin.",
+      "signinSub": "Kaldığın yerden devam et — kayıtların, seslerin ve üretimlerin seni bekliyor.",
+      "signupHeading": "Sesin. Yayınladığın her yerde.",
+      "signupSub": "Ücretsiz kayıt ol, e-postanı doğrula, iki dakikadan kısa sürede üretmeye başla.",
+      "signinBadge": "Tekrar hoş geldin",
+      "signupBadge": "Ücretsiz deneme",
+      "perks": [
+        "E-posta doğrulamasında 1.000 ücretsiz kredi",
+        "Stüdyo kalitesinde ses klonlama",
+        "Kutudan çıkar çıkmaz 30+ dil",
+        "İstediğin zaman iptal et — sesin sana kalır"
+      ],
+      "testimonial": "VoiceLab ile aylık 400$'lık stüdyo seansını değiştirdik. Aynı ses, aynı parlaklık — ve editör projeyi açmadan yayına hazır.",
+      "testimonialAuthor": "— Bağımsız podcast yapımcısı · 12 bölüm geride"
+    }
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "textToSpeech": "Metinden Sese",
+    "speechToText": "Sesten Metne",
+    "voiceClone": "Ses Klonlama",
+    "recordings": "Kayıtlar",
+    "generations": "Üretimler",
+    "credits": "Krediler",
+    "settings": "Ayarlar",
+    "collapse": "Daralt"
+  },
+  "dashboard": {
+    "greetingNight": "İyi geceler",
+    "greetingMorning": "Günaydın",
+    "greetingAfternoon": "İyi günler",
+    "greetingEvening": "İyi akşamlar",
+    "subtitle": "VoiceLab'a hoş geldin. Konuşma üret, ses klonla, ses kütüphaneni yönet.",
+    "metrics": {
+      "credits": "Krediler",
+      "recordings": "Kayıtlar",
+      "voices": "Sesler",
+      "generations": "Üretimler",
+      "renews": "{date} tarihinde yenilenir",
+      "freeGrantHint": "Doğrulamada tek seferlik hediye"
+    },
+    "quickStart": "Hızlı başla",
+    "actions": {
+      "generateTitle": "Konuşma üret",
+      "generateBody": "Metni saniyeler içinde doğal sese dönüştür.",
+      "recordTitle": "Ses kaydet",
+      "recordBody": "Klonlama için temiz bir örnek yakala.",
+      "cloneTitle": "Ses klonla",
+      "cloneBody": "Kişisel bir ses modeli oluştur.",
+      "pastTitle": "Geçmiş üretimler",
+      "pastBody": "Tekrar dinle, indir ya da paylaş."
+    },
+    "upgradeOut": "Ücretsiz kredilerini kullandın",
+    "upgradeLow": "Kredilerin azalıyor",
+    "upgradeBody": "Aylık 30.000 kredi ve ses klonlama için Basic'e geç.",
+    "seePlans": "Planları gör",
+    "recentTitle": "Son üretimler",
+    "viewAll": "Tümünü gör →",
+    "emptyTitle": "Henüz üretim yok.",
+    "emptyBodyPrefix": "İlk üretimini yapmak için",
+    "emptyBodySuffix": "sayfasına git.",
+    "startNow": "Şimdi başla"
+  },
+  "tts": {
+    "title": "Metinden Sese",
+    "selectVoiceHint": "Panelden bir ses seç →",
+    "browseVoices": "Sesleri gez",
+    "textareaPlaceholder": "Sese dönüştürmek istediğin metni gir…",
+    "chars": "karakter",
+    "max": "max",
+    "costsCredits": "{n} krediye mâl olur",
+    "model": "Model",
+    "format": "Format",
+    "needMoreCredits": "{n} kredi daha gerekli",
+    "generateSpeech": "Konuşma Üret",
+    "exploreTitle": "Keşfet",
+    "searchVoicesPlaceholder": "Ses ara…",
+    "filters": {
+      "language": "Dil",
+      "accent": "Aksan",
+      "category": "Kategori",
+      "gender": "Cinsiyet",
+      "age": "Yaş"
+    },
+    "clearAll": "Tüm filtreleri temizle",
+    "page": "Sayfa",
+    "voices": "ses",
+    "noVoicesFound": "Ses bulunamadı."
+  },
+  "recordings": {
+    "title": "Kayıt stüdyosu",
+    "sub": "Sesinden temiz bir dakika yakala. Klonlamak ya da konuşma dönüştürmek için kullan.",
+    "yours": "Kayıtların",
+    "countOne": "kayıt",
+    "countMany": "kayıt",
+    "emptyTitle": "Henüz kayıt yok",
+    "emptyBody": "İlk örneğini yakalamak için yukarıdaki mikrofona bas.",
+    "confirmDelete": "Onaylamak için tekrar tıkla"
+  },
+  "credits": {
+    "title": "Krediler",
+    "sub": "Bakiyeni, planını ve kullanımını yönet.",
+    "available": "Kullanılabilir bakiye",
+    "resetsMonthly": "Planınla birlikte aylık sıfırlanır",
+    "freeGrantSub": "E-posta doğrulamasında tek seferlik ücretsiz hediye",
+    "planLabel": "{tier} plan",
+    "renewsOn": "{date} tarihinde yenilenir",
+    "freeUsage": "Ücretsiz hediye kullanımı",
+    "stats": {
+      "generations": "Üretimler",
+      "characters": "Üretilen karakter",
+      "average": "Üretim başına ort. kredi"
+    },
+    "upgradeHeading": "Planını yükselt",
+    "manageHeading": "Aboneliği yönet",
+    "changePlan": "Planı değiştir",
+    "popular": "Popüler",
+    "perMonth": "/ay",
+    "creditsPerMonth": "Aylık {n} kredi"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "sub": "Hesap profili, plan ve tercihler.",
+    "profile": "Profil",
+    "plan": "Plan",
+    "preferences": "Tercihler",
+    "security": "Güvenlik",
+    "email": "E-posta",
+    "displayName": "Görünen ad",
+    "nameNotSet": "Ayarlanmadı",
+    "memberSince": "Üyelik tarihi",
+    "accountStatus": "Hesap durumu",
+    "trial": "Deneme",
+    "planFreeBody": "1.000 ücretsiz kredi · aylık kota için yükselt",
+    "planPaidBody": "Aylık kota faturalandırma tarihinde yenilenir",
+    "viewCredits": "Kredileri gör",
+    "upgrade": "Yükselt",
+    "appearance": "Görünüm",
+    "appearanceSub": "Açık ve koyu tema arasında geçiş yap.",
+    "languageSub": "Arayüz dilini seç.",
+    "securityBody": "Şifre değişikliği ve e-posta değişikliği sonraki bir aşamada gelecek.",
+    "changePasswordSoon": "Şifreyi değiştir (yakında)"
+  },
+  "transcribe": {
+    "title": "Sesten Metne",
+    "comingSoon": "Yakında."
+  },
+  "voices": {
+    "title": "Ses Klonlama",
+    "sub": "Konuşma üretmek ya da ses dönüştürmek için bir ses seç.",
+    "newQuickClone": "Yeni Hızlı Klon",
+    "newStudioClone": "Yeni Stüdyo Klonu",
+    "upgradeToClone": "Klonlamak için yükselt",
+    "upgradeQuickHint": "Sesini klonlamak için yükselt",
+    "studioClonePro": "Stüdyo Klonu (Pro)",
+    "studioCloneHint": "Stüdyo Ses Klonu Pro planındadır",
+    "thLabel": "Etiket",
+    "thStatus": "Durum",
+    "thCreated": "Oluşturuldu",
+    "thActions": "İşlemler",
+    "generate": "Üret",
+    "deleteVoice": "Sesi sil",
+    "statusReady": "hazır",
+    "statusPending": "bekliyor",
+    "statusFailed": "başarısız",
+    "emptyNoVoices": "Henüz ses yok.",
+    "emptyCreateFirst": "İlk klonunu yukarıdan oluştur.",
+    "emptyUpgradeOrLibrary": "Sesini klonlamak için yükselt — ya da ses kütüphanesini bekle (yakında).",
+    "dialog": {
+      "titleIvc": "Yeni Hızlı Klon",
+      "titlePvc": "Yeni Stüdyo Klonu",
+      "descIvc": "1-5 dakikalık bir kayıt seç. Baştan sona aynı ton en iyisidir.",
+      "descPvc": "Daha uzun, stüdyo kalitesinde bir kayıt seç (30+ dakika ideal).",
+      "sourceLabel": "Kaynak kayıt",
+      "choose": "Seç…",
+      "noRecordings": "Henüz kayıt yok. Önce stüdyoda bir kayıt al.",
+      "label": "Etiket",
+      "labelPlaceholder": "Sakin, Anlatıcı, Enerjik…",
+      "cancel": "İptal",
+      "create": "Sesi oluştur",
+      "creating": "Oluşturuluyor…",
+      "voiceCreated": "Ses oluşturuldu.",
+      "errPickRecording": "Önce bir kayıt seç.",
+      "errPickLabel": "Sese bir etiket ver.",
+      "errTierLimit": "Bu klon tipini kullanmak için planını yükselt.",
+      "errLabelTaken": "Bu etikete sahip bir sesin zaten var.",
+      "errGeneric": "Ses oluşturulamadı."
+    }
+  },
+  "upgrade": {
+    "buttonLabel": "Planı yükselt",
+    "dialogTitle": "Planını yükselt",
+    "dialogSub": "İş akışına uygun planı seç. İstediğin zaman iptal et.",
+    "currentPlan": "Mevcut plan",
+    "stripeBadge": "Güvenli ödeme"
+  },
+  "checkout": {
+    "title": "Çok az kaldı",
+    "soonBadge": "Yakında",
+    "headingPrefix": "Stripe ödemesi",
+    "headingSuffix": "için yolda.",
+    "body": "Ödeme entegrasyonunu tamamlıyoruz. Bu arada bize yaz, seni kişisel olarak başlatalım.",
+    "selected": "Seçili plan",
+    "billing": "Faturalandırma",
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "contactCta": "Bize ulaş",
+    "backCta": "Uygulamaya dön"
+  }
+}

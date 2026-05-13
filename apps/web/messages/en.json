@@ -1,0 +1,430 @@
+{
+  "meta": {
+    "siteName": "VoiceLab",
+    "defaultTitle": "VoiceLab — Bring your voice into your workflow",
+    "defaultDescription": "Clone your voice once. Generate hours of natural-sounding audio in any tone, any language. 1,000 free credits on sign-up.",
+    "keywords": "voice cloning, text to speech, AI voice generation, speech synthesis, voice AI, audio production, podcast voice, voice over, dubbing, multilingual TTS",
+    "ogTitle": "VoiceLab",
+    "ogDescription": "Managed AI voice generation. Clone, generate, ship.",
+    "pages": {
+      "home": { "title": "VoiceLab — Bring your voice into your workflow", "description": "Clone your voice once. Generate hours of natural-sounding audio. 1,000 free credits on sign-up." },
+      "pricing": { "title": "Pricing", "description": "Simple, predictable pricing. Start free, upgrade when you outgrow it. Cancel anytime." },
+      "login": { "title": "Sign in", "description": "Sign in to VoiceLab to manage your voices, recordings, and generations." },
+      "register": { "title": "Create your account", "description": "Sign up for VoiceLab. Verify your email and claim 1,000 free credits." },
+      "verifyEmail": { "title": "Verify your email", "description": "Check your inbox to verify your VoiceLab account." },
+      "dashboard": { "title": "Dashboard", "description": "Your VoiceLab workspace." },
+      "tts": { "title": "Text to Speech", "description": "Generate natural-sounding audio from text." },
+      "transcribe": { "title": "Speech to Text", "description": "Convert audio recordings to text." },
+      "voiceClone": { "title": "Voice Clone", "description": "Manage your cloned voices." },
+      "recordings": { "title": "Recordings", "description": "Capture and manage your voice samples." },
+      "generations": { "title": "Generations", "description": "All audio you've generated." },
+      "credits": { "title": "Credits", "description": "Manage your balance, plan, and usage." },
+      "settings": { "title": "Settings", "description": "Account profile, plan, and preferences." },
+      "checkout": { "title": "Checkout", "description": "Complete your subscription." }
+    }
+  },
+  "common": {
+    "back": "Back",
+    "backToSite": "Back to site",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "getStarted": "Get started",
+    "getStartedFree": "Get started free",
+    "loading": "Loading…",
+    "noResults": "No results.",
+    "credits": "credits",
+    "language": "Language",
+    "theme": "Theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark"
+  },
+  "header": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "pricing": "Pricing"
+  },
+  "hero": {
+    "badge": "1,000 free credits on sign up",
+    "headingPrefix": "Voice cloning for",
+    "rotating": ["podcasts", "videos", "audiobooks", "trailers", "ads", "tutorials"],
+    "sub": "Record a single minute. Generate hours of natural-sounding audio in any tone and any language. From idea to final cut, your voice scales with you.",
+    "ctaPrimary": "Get started free",
+    "ctaSecondary": "See how it works",
+    "trustNoCard": "No credit card required",
+    "trustCancel": "Cancel anytime",
+    "trustYours": "Your audio stays yours"
+  },
+  "features": {
+    "eyebrow": "Features",
+    "heading": "Everything you need to ship voice",
+    "sub": "One workflow for cloning, generation, and conversion — no stitching tools together.",
+    "items": {
+      "cloneTitle": "Record once, clone forever",
+      "cloneBody": "Capture a clean minute of your voice. Generate hours of natural-sounding audio from text in any tone.",
+      "fidelityTitle": "Studio-grade fidelity",
+      "fidelityBody": "Default voices feel real. Pro cloning captures cadence, breath, and inflection — not just timbre.",
+      "multilingualTitle": "Multilingual by default",
+      "multilingualBody": "Speak Turkish today, English tomorrow, Spanish next week — same voice, no extra setup.",
+      "conversionTitle": "Voice Conversion",
+      "conversionBody": "Drop in any audio, hand back the same performance in your voice. Preserve emotion and timing."
+    }
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "heading": "Three steps. No glue code.",
+    "sub": "From idea to final audio in minutes — not days.",
+    "step1Title": "Sign up & verify",
+    "step1Body": "Email confirmation activates your account and unlocks 1,000 free credits.",
+    "step2Title": "Record or pick a voice",
+    "step2Body": "Capture in the in-browser studio, or start from the curated catalog of professional voices.",
+    "step3Title": "Generate & ship",
+    "step3Body": "Type or paste text, tweak settings, hand the MP3 to your editor. Done in seconds.",
+    "statAvgTime": "Average generation time",
+    "statLangs": "Languages supported",
+    "statFreeCredits": "Free on sign up"
+  },
+  "pricing": {
+    "eyebrow": "Pricing",
+    "heading": "Simple, predictable pricing",
+    "sub": "Start free, upgrade when you outgrow it. Cancel anytime — no questions asked.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save": "Save 20%",
+    "footnote": "All prices in USD. Need something custom?",
+    "talkToUs": "Talk to us",
+    "billedAnnually": "Billed annually",
+    "perYear": "year",
+    "perMonth": "/mo",
+    "oneTimeGrant": "One-time grant on verification",
+    "talkVolume": "Talk to us about volume",
+    "mostPopular": "Most popular",
+    "tiers": {
+      "free": {
+        "tagline": "Try VoiceLab end to end with no commitment.",
+        "features": [
+          "1,000 credits, granted once on email verification",
+          "Voice catalog",
+          "Text-to-speech generation",
+          "MP3 128 kbps output"
+        ],
+        "cta": "Get started free"
+      },
+      "basic": {
+        "tagline": "Clone your own voice, generate at production scale.",
+        "features": [
+          "30,000 credits / month",
+          "Quick Voice Clone",
+          "Voice Conversion (speech-to-speech)",
+          "Multi-language dubbing",
+          "MP3 128 kbps output"
+        ],
+        "cta": "Start Basic"
+      },
+      "pro": {
+        "tagline": "Studio-grade fidelity for creators and teams.",
+        "features": [
+          "121,000 credits / month",
+          "Quick + Studio Voice Clone",
+          "Voice Conversion",
+          "Multi-language dubbing",
+          "MP3 192 kbps output",
+          "Priority support"
+        ],
+        "cta": "Start Pro"
+      },
+      "enterprise": {
+        "tagline": "Volume credits, studio-quality export, dedicated support.",
+        "features": [
+          "Custom credit allowance",
+          "Everything in Pro",
+          "44.1 kHz studio PCM output",
+          "SLA + dedicated success manager"
+        ],
+        "cta": "Contact sales"
+      }
+    },
+    "page": {
+      "heroEyebrow": "Pricing",
+      "heroHeading": "Pricing that scales with you.",
+      "heroSub": "Try it free with 1,000 credits. Upgrade when your production picks up. Cancel any time — your audio and clones stay yours.",
+      "faqEyebrow": "Questions",
+      "faqHeading": "Frequently asked",
+      "faqSub": "Quick answers to the things people most ask before they sign up.",
+      "faq": [
+        { "q": "What is a credit?", "a": "One credit covers roughly one character of generated speech. A 300-word script consumes about 1,800 credits. Voice cloning and conversion are credit-free on paid plans." },
+        { "q": "Can I switch plans later?", "a": "Yes. Upgrade or downgrade any time. We prorate the difference and your unused credits roll over for the current billing period." },
+        { "q": "What happens to my voice clones if I cancel?", "a": "Your recordings and clones stay in your account in read-only mode. Generations don't refresh, but everything you've made remains downloadable. Re-subscribe any time to resume." },
+        { "q": "Do you offer refunds?", "a": "If something isn't right within the first 14 days, write to us and we'll refund the full month — no questions, no friction." },
+        { "q": "Is my voice data secure?", "a": "Your recordings are stored encrypted at rest. We never share, sell, or use your voice for training. Delete a clone and the model and source audio are gone for good within 24 hours." },
+        { "q": "Can I cancel anytime?", "a": "Yes. One click in Settings. No retention dance, no email surveys — your subscription stops at the end of the current period." }
+      ]
+    }
+  },
+  "whoWeAre": {
+    "heading": "Built by people who ship",
+    "body": "VoiceLab is a small operator-run studio. We obsess over voice quality, fast turnaround, and predictable pricing. No data goes anywhere it shouldn't. Your recordings and clones are yours — delete them whenever you want and they're gone for good."
+  },
+  "finalCta": {
+    "badge": "Ready to ship?",
+    "headingPrefix": "Bring your voice into",
+    "headingHighlight": "every project.",
+    "sub": "1,000 free credits the moment you verify your email. No credit card. Be generating in under two minutes.",
+    "ctaPrimary": "Get started free",
+    "ctaSecondary": "See pricing"
+  },
+  "footer": {
+    "tagline": "Managed AI voice generation. Clone, generate, ship.",
+    "product": "Product",
+    "account": "Account",
+    "contact": "Contact",
+    "rights": "All rights reserved.",
+    "operatedBy": "Operated by"
+  },
+  "cookie": {
+    "title": "We use cookies",
+    "body": "Essential cookies keep you signed in. Optional ones help us understand which features you use most. You can change this any time.",
+    "learnMore": "Learn more",
+    "decline": "Decline",
+    "accept": "Accept all"
+  },
+  "auth": {
+    "signinHeading": "Sign in to VoiceLab",
+    "signinSub": "Welcome back — let's get your voice into your workflow.",
+    "signupHeading": "Create your account",
+    "signupSub": "Verify your email and claim 1,000 free credits. No card required.",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••••",
+    "passwordSignupPlaceholder": "At least 8 characters",
+    "name": "Name",
+    "nameOptional": "optional",
+    "namePlaceholder": "Your name",
+    "submitSignin": "Sign in",
+    "submitSigninLoading": "Signing in…",
+    "submitSignup": "Create account",
+    "submitSignupLoading": "Creating account…",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "emailVerified": "Email verified — you can sign in.",
+    "termsNotice": "By creating an account, you agree to our terms of service and privacy policy.",
+    "errSuspended": "Your account is suspended. Contact support.",
+    "errInvalidCredentials": "Invalid email or password.",
+    "errRateLimited": "Too many sign-in attempts. Try again in a moment.",
+    "errSigninGeneric": "Sign-in failed. Please try again.",
+    "errEmailTaken": "That email is already registered. Try signing in.",
+    "errSignupRateLimited": "Too many sign-up attempts. Try again later.",
+    "errValidation": "Please double-check the form.",
+    "errSignupGeneric": "Sign-up failed. Please try again.",
+    "aside": {
+      "signinHeading": "Welcome back to your voice.",
+      "signinSub": "Pick up where you left off — your recordings, voices, and generations are waiting.",
+      "signupHeading": "Your voice. Everywhere you ship.",
+      "signupSub": "Sign up free, verify your email, and start generating in under two minutes.",
+      "signinBadge": "Welcome back",
+      "signupBadge": "Free trial",
+      "perks": [
+        "1,000 free credits on email verification",
+        "Studio-grade voice cloning",
+        "30+ languages out of the box",
+        "Cancel anytime — your audio stays yours"
+      ],
+      "testimonial": "We replaced a $400/month studio session with VoiceLab. Same voice, same polish — and it ships before the editor even opens the project.",
+      "testimonialAuthor": "— Solo podcast producer · 12 episodes in"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "textToSpeech": "Text to Speech",
+    "speechToText": "Speech to Text",
+    "voiceClone": "Voice Clone",
+    "recordings": "Recordings",
+    "generations": "Generations",
+    "credits": "Credits",
+    "settings": "Settings",
+    "collapse": "Collapse"
+  },
+  "dashboard": {
+    "greetingNight": "Good night",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "subtitle": "Welcome to VoiceLab. Generate speech, clone voices, manage your audio library.",
+    "metrics": {
+      "credits": "Credits",
+      "recordings": "Recordings",
+      "voices": "Voices",
+      "generations": "Generations",
+      "renews": "Renews {date}",
+      "freeGrantHint": "One-time grant on verification"
+    },
+    "quickStart": "Quick start",
+    "actions": {
+      "generateTitle": "Generate speech",
+      "generateBody": "Turn text into natural audio in seconds.",
+      "recordTitle": "Record audio",
+      "recordBody": "Capture a clean sample for cloning.",
+      "cloneTitle": "Clone a voice",
+      "cloneBody": "Build a personal voice model.",
+      "pastTitle": "Past generations",
+      "pastBody": "Replay, download, or share audio."
+    },
+    "upgradeOut": "You've used your free credits",
+    "upgradeLow": "Running low on credits",
+    "upgradeBody": "Upgrade to Basic for 30,000 credits a month and unlock voice cloning.",
+    "seePlans": "See plans",
+    "recentTitle": "Recent generations",
+    "viewAll": "View all →",
+    "emptyTitle": "No generations yet.",
+    "emptyBodyPrefix": "Head to",
+    "emptyBodySuffix": "to create your first.",
+    "startNow": "Start now"
+  },
+  "tts": {
+    "title": "Text to Speech",
+    "selectVoiceHint": "Select a voice from the panel →",
+    "browseVoices": "Browse voices",
+    "textareaPlaceholder": "Enter the text you want to convert to speech…",
+    "chars": "chars",
+    "max": "max",
+    "costsCredits": "costs {n} credits",
+    "model": "Model",
+    "format": "Format",
+    "needMoreCredits": "Need {n} more credits",
+    "generateSpeech": "Generate Speech",
+    "exploreTitle": "Explore",
+    "searchVoicesPlaceholder": "Search voices…",
+    "filters": {
+      "language": "Language",
+      "accent": "Accent",
+      "category": "Category",
+      "gender": "Gender",
+      "age": "Age"
+    },
+    "clearAll": "Clear all filters",
+    "page": "Page",
+    "voices": "voices",
+    "noVoicesFound": "No voices found."
+  },
+  "recordings": {
+    "title": "Recording studio",
+    "sub": "Capture a clean minute of your voice. Use it to clone or convert speech.",
+    "yours": "Your recordings",
+    "countOne": "recording",
+    "countMany": "recordings",
+    "emptyTitle": "No recordings yet",
+    "emptyBody": "Hit the mic above to capture your first sample.",
+    "confirmDelete": "Click again to confirm"
+  },
+  "credits": {
+    "title": "Credits",
+    "sub": "Manage your balance, plan, and usage.",
+    "available": "Available balance",
+    "resetsMonthly": "Resets monthly with your plan",
+    "freeGrantSub": "One-time free grant on email verification",
+    "planLabel": "{tier} plan",
+    "renewsOn": "Renews {date}",
+    "freeUsage": "Free grant usage",
+    "stats": {
+      "generations": "Generations",
+      "characters": "Characters generated",
+      "average": "Avg credits / gen"
+    },
+    "upgradeHeading": "Upgrade your plan",
+    "manageHeading": "Manage subscription",
+    "changePlan": "Change plan",
+    "popular": "Popular",
+    "perMonth": "/month",
+    "creditsPerMonth": "{n} credits per month"
+  },
+  "settings": {
+    "title": "Settings",
+    "sub": "Account profile, plan, and preferences.",
+    "profile": "Profile",
+    "plan": "Plan",
+    "preferences": "Preferences",
+    "security": "Security",
+    "email": "Email",
+    "displayName": "Display name",
+    "nameNotSet": "Not set",
+    "memberSince": "Member since",
+    "accountStatus": "Account status",
+    "trial": "Trial",
+    "planFreeBody": "1,000 free credits · upgrade for monthly quota",
+    "planPaidBody": "Monthly quota refreshes on your billing date",
+    "viewCredits": "View credits",
+    "upgrade": "Upgrade",
+    "appearance": "Appearance",
+    "appearanceSub": "Switch between light and dark themes.",
+    "languageSub": "Choose your interface language.",
+    "securityBody": "Password change and email change land in a follow-up phase.",
+    "changePasswordSoon": "Change password (soon)"
+  },
+  "transcribe": {
+    "title": "Speech to Text",
+    "comingSoon": "Coming soon."
+  },
+  "voices": {
+    "title": "Voice Clone",
+    "sub": "Select a voice to generate speech or convert audio.",
+    "newQuickClone": "New Quick Clone",
+    "newStudioClone": "New Studio Clone",
+    "upgradeToClone": "Upgrade to clone",
+    "upgradeQuickHint": "Upgrade to clone your voice",
+    "studioClonePro": "Studio Clone (Pro)",
+    "studioCloneHint": "Studio Voice Clone is on Pro",
+    "thLabel": "Label",
+    "thStatus": "Status",
+    "thCreated": "Created",
+    "thActions": "Actions",
+    "generate": "Generate",
+    "deleteVoice": "Delete voice",
+    "statusReady": "ready",
+    "statusPending": "pending",
+    "statusFailed": "failed",
+    "emptyNoVoices": "No voices yet.",
+    "emptyCreateFirst": "Create your first clone above.",
+    "emptyUpgradeOrLibrary": "Upgrade to clone your voice — or wait for the voice library (coming soon).",
+    "dialog": {
+      "titleIvc": "New Quick Clone",
+      "titlePvc": "New Studio Clone",
+      "descIvc": "Pick a 1-5 minute recording. Same tone throughout works best.",
+      "descPvc": "Pick a longer studio-grade recording (30+ minutes optimal).",
+      "sourceLabel": "Source recording",
+      "choose": "Choose…",
+      "noRecordings": "No recordings yet. Record one in the studio first.",
+      "label": "Label",
+      "labelPlaceholder": "Calm, Storyteller, Energetic…",
+      "cancel": "Cancel",
+      "create": "Create voice",
+      "creating": "Creating…",
+      "voiceCreated": "Voice created.",
+      "errPickRecording": "Pick a recording first.",
+      "errPickLabel": "Give the voice a label.",
+      "errTierLimit": "Upgrade your tier to use this clone type.",
+      "errLabelTaken": "You already have a voice with this label.",
+      "errGeneric": "Could not create voice."
+    }
+  },
+  "upgrade": {
+    "buttonLabel": "Upgrade plan",
+    "dialogTitle": "Upgrade your plan",
+    "dialogSub": "Pick the plan that fits your workflow. Cancel anytime.",
+    "currentPlan": "Current plan",
+    "stripeBadge": "Secure checkout"
+  },
+  "checkout": {
+    "title": "Almost there",
+    "soonBadge": "Coming soon",
+    "headingPrefix": "Stripe checkout for",
+    "headingSuffix": "is on the way.",
+    "body": "We're wrapping up payments integration. Drop us a line and we'll personally onboard you in the meantime.",
+    "selected": "Selected plan",
+    "billing": "Billing",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "contactCta": "Contact us",
+    "backCta": "Back to app"
+  }
+}

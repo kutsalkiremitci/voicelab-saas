@@ -1,7 +1,9 @@
 export type Tier = {
   id: "free" | "basic" | "pro" | "enterprise";
   name: string;
-  price: string;
+  monthlyPrice: string;
+  yearlyPrice: string;
+  yearlyTotal?: string;
   cadence: string;
   tagline: string;
   highlighted?: boolean;
@@ -13,8 +15,9 @@ export const TIERS: Tier[] = [
   {
     id: "free",
     name: "Free",
-    price: "$0",
-    cadence: "one-time",
+    monthlyPrice: "$0",
+    yearlyPrice: "$0",
+    cadence: "forever",
     tagline: "Try VoiceLab end to end with no commitment.",
     features: [
       "1,000 credits, granted once on email verification",
@@ -27,7 +30,9 @@ export const TIERS: Tier[] = [
   {
     id: "basic",
     name: "Basic",
-    price: "$15",
+    monthlyPrice: "$15",
+    yearlyPrice: "$12",
+    yearlyTotal: "$144",
     cadence: "per month",
     tagline: "Clone your own voice, generate at production scale.",
     features: [
@@ -37,12 +42,14 @@ export const TIERS: Tier[] = [
       "Multi-language dubbing",
       "MP3 128 kbps output",
     ],
-    cta: { label: "Upgrade to Basic", href: "/register" },
+    cta: { label: "Start Basic", href: "/register" },
   },
   {
     id: "pro",
     name: "Pro",
-    price: "$59",
+    monthlyPrice: "$59",
+    yearlyPrice: "$47",
+    yearlyTotal: "$564",
     cadence: "per month",
     tagline: "Studio-grade fidelity for creators and teams.",
     highlighted: true,
@@ -54,12 +61,13 @@ export const TIERS: Tier[] = [
       "MP3 192 kbps output",
       "Priority support",
     ],
-    cta: { label: "Upgrade to Pro", href: "/register" },
+    cta: { label: "Start Pro", href: "/register" },
   },
   {
     id: "enterprise",
     name: "Enterprise",
-    price: "Custom",
+    monthlyPrice: "Custom",
+    yearlyPrice: "Custom",
     cadence: "annual",
     tagline: "Volume credits, studio-quality export, dedicated support.",
     features: [
