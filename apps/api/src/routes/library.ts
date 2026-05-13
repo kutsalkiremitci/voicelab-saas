@@ -54,6 +54,7 @@ app.get("/voices", requireAuth, requireVerified, async (c) => {
     page,
     pageSize,
     gender: q.gender,
+    age: q.age,
     accent: q.accent,
     language: q.language,
     category: q.category,
@@ -71,13 +72,25 @@ app.get("/voices/:voiceId", requireAuth, requireVerified, async (c) => {
   return c.json({ voice });
 });
 
-// Preview: redirect to upstream URL (cached by browser)
+// Preview: proxy upstream MP3 so audio plays same-origin (no redirect / cookie issues)
 app.get("/voices/:voiceId/preview", requireAuth, requireVerified, async (c) => {
   const { voiceId } = c.req.param();
   const voice = await getLibraryVoiceById(voiceId);
   if (!voice) throw new AppError("NOT_FOUND", "Library voice not found", 404);
   if (!voice.previewUrl) throw new AppError("NOT_FOUND", "No preview available", 404);
-  return c.redirect(voice.previewUrl, 302);
+
+  const upstream = await fetch(voice.previewUrl);
+  if (!upstream.ok || !upstream.body) {
+    throw new AppError("UPSTREAM_ERROR", "Failed to fetch preview", 502);
+  }
+
+  return new Response(upstream.body, {
+    headers: {
+      "Content-Type": upstream.headers.get("content-type") ?? "audio/mpeg",
+      "Cache-Control": "public, max-age=3600",
+      "Accept-Ranges": "bytes",
+    },
+  });
 });
 
 // Generate TTS using library voice

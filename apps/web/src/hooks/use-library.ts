@@ -24,6 +24,7 @@ export type LibraryPage = {
 
 export type LibraryFilters = {
   gender?: string;
+  age?: string;
   accent?: string;
   language?: string;
   category?: string;
@@ -35,6 +36,7 @@ export type LibraryFilters = {
 export function useLibraryVoices(filters: LibraryFilters = {}) {
   const params = new URLSearchParams();
   if (filters.gender) params.set("gender", filters.gender);
+  if (filters.age) params.set("age", filters.age);
   if (filters.accent) params.set("accent", filters.accent);
   if (filters.language) params.set("language", filters.language);
   if (filters.category) params.set("category", filters.category);

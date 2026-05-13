@@ -3,6 +3,7 @@ import { env } from "../env";
 import { internals } from "./voice-ai";
 
 const CACHE_TTL = 300;
+const VOICE_CACHE_TTL = 3600;
 const PAGE_SIZE = 20;
 
 export type LibraryVoiceRow = {
@@ -20,6 +21,7 @@ export type LibraryVoiceRow = {
 
 export type ListFilters = {
   gender?: string;
+  age?: string;
   accent?: string;
   language?: string;
   category?: string;
@@ -83,6 +85,7 @@ export async function listLibraryVoices(filters: ListFilters = {}): Promise<Libr
     page,
     pageSize,
     gender: filters.gender,
+    age: filters.age,
     accent: filters.accent,
     language: filters.language,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -99,6 +102,15 @@ export async function listLibraryVoices(filters: ListFilters = {}): Promise<Libr
   };
 
   await redis.set(key, JSON.stringify(data), "EX", CACHE_TTL);
+
+  // Cache each voice individually so /preview and detail endpoints can look up by ID
+  // without re-calling the shared-library endpoint.
+  await Promise.all(
+    data.voices.map((v) =>
+      redis.set(`library:v2:voice:${v.voiceId}`, JSON.stringify(v), "EX", VOICE_CACHE_TTL),
+    ),
+  );
+
   return data;
 }
 
@@ -107,26 +119,17 @@ export async function getLibraryVoiceById(voiceId: string): Promise<LibraryVoice
   const cached = await redis.get(cacheKey);
   if (cached) return JSON.parse(cached) as LibraryVoiceRow;
 
-  const client = internals.clientFactory(env.ELEVENLABS_DEMO_API_KEY);
-  try {
-    const voice = await client.voices.get(voiceId);
-    const row: LibraryVoiceRow = {
-      voiceId: voice.voiceId ?? voiceId,
-      name: voice.name ?? "",
-      description: voice.description ?? null,
-      gender: (voice.labels?.["gender"] as string | undefined) ?? "",
-      age: (voice.labels?.["age"] as string | undefined) ?? "",
-      accent: (voice.labels?.["accent"] as string | undefined) ?? "",
-      category: voice.category ?? "",
-      useCase: (voice.labels?.["use_case"] as string | undefined) ?? "",
-      previewUrl: voice.previewUrl ?? null,
-      language: (voice.labels?.["language"] as string | undefined) ?? null,
-    };
-    await redis.set(cacheKey, JSON.stringify(row), "EX", CACHE_TTL);
-    return row;
-  } catch {
-    return null;
+  // Cold cache: scan the first few pages of the shared library, looking for this voice.
+  // listLibraryVoices populates per-voice keys as a side effect, so subsequent
+  // lookups hit the cache.
+  const MAX_SCAN_PAGES = 20;
+  for (let page = 0; page < MAX_SCAN_PAGES; page++) {
+    const result = await listLibraryVoices({ page, pageSize: PAGE_SIZE });
+    const hit = result.voices.find((v) => v.voiceId === voiceId);
+    if (hit) return hit;
+    if (!result.hasMore) break;
   }
+  return null;
 }
 
 export async function invalidateLibraryCache(): Promise<void> {
