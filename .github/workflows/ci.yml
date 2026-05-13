@@ -33,13 +33,24 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      mailpit:
+        image: axllent/mailpit:latest
+        ports: ["1025:1025", "8025:8025"]
+
     env:
+      NODE_ENV: test
       DATABASE_URL: postgresql://voicelab:voicelab@localhost:5432/voicelab_test
       REDIS_URL: redis://localhost:6379
       SESSION_SECRET: ci-secret-must-be-at-least-32-characters
       WEB_ORIGIN: http://localhost:3000
+      APP_URL: http://localhost:3000
       ELEVENLABS_DEMO_API_KEY: ci-mock-key
       ELEVENLABS_KEY_ENCRYPTION_SECRET: ci-encryption-secret-32-bytes-min
+      SMTP_HOST: localhost
+      SMTP_PORT: "1025"
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      EMAIL_FROM: VoiceLab <ci@voicelab.local>
 
     steps:
       - uses: actions/checkout@v4
@@ -51,6 +62,9 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Apply DB migrations
+        run: bun run db:migrate
 
       - name: Lint
         run: bun run lint
