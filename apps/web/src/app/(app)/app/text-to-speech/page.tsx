@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   ChevronLeft,
   ChevronRight,
@@ -15,6 +15,7 @@ import {
   Download,
   Check,
   X,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,8 @@ import { cn } from "@/lib/utils";
 // ─── Constants ─────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 20;
+const MIN_PANEL_W = 280;
+const MAX_PANEL_W = 680;
 
 const LANGUAGES = [
   { code: "af", label: "Afrikaans" },
@@ -80,9 +83,27 @@ const LANGUAGES = [
   { code: "vi", label: "Vietnamese" },
 ];
 
-const ACCENTS = [
-  "American", "British", "Australian", "Canadian", "Irish", "Scottish",
-  "South African", "New Zealand", "Indian", "Nigerian", "Transatlantic",
+// Languages that have meaningful accent variants in the upstream library
+const LANGUAGE_ACCENTS: Record<string, string[]> = {
+  en: [
+    "american", "british", "australian", "canadian", "irish", "scottish",
+    "south african", "new zealand", "indian", "nigerian", "transatlantic",
+  ],
+  es: ["spanish", "mexican", "latin american"],
+  fr: ["french", "canadian french"],
+  pt: ["brazilian", "european"],
+  de: ["german", "austrian"],
+  ar: ["egyptian", "gulf", "levantine"],
+};
+
+const ALL_ACCENTS = [
+  "american", "british", "australian", "canadian", "irish", "scottish",
+  "south african", "new zealand", "indian", "nigerian", "transatlantic",
+  "spanish", "mexican", "latin american",
+  "french", "canadian french",
+  "brazilian", "european",
+  "german", "austrian",
+  "egyptian", "gulf", "levantine",
 ];
 
 const CATEGORIES = ["professional", "generated", "cloned", "premade", "high_quality", "famous"];
@@ -136,9 +157,15 @@ type FilterDropdownProps = {
   options: { value: string; label: string }[];
   selected: string[];
   onChange: (vals: string[]) => void;
+  searchable?: boolean;
 };
 
-function FilterDropdown({ label, options, selected, onChange }: FilterDropdownProps) {
+function FilterDropdown({ label, options, selected, onChange, searchable = false }: FilterDropdownProps) {
+  const [q, setQ] = useState("");
+  const filtered = searchable && q
+    ? options.filter((o) => o.label.toLowerCase().includes(q.toLowerCase()))
+    : options;
+
   function toggle(val: string) {
     onChange(selected.includes(val) ? selected.filter((v) => v !== val) : [...selected, val]);
   }
@@ -146,7 +173,7 @@ function FilterDropdown({ label, options, selected, onChange }: FilterDropdownPr
   const hasSelection = selected.length > 0;
 
   return (
-    <Popover>
+    <Popover onOpenChange={(open) => { if (!open) setQ(""); }}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -166,29 +193,51 @@ function FilterDropdown({ label, options, selected, onChange }: FilterDropdownPr
           <ChevronDown className="h-3 w-3 opacity-60" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-52 p-0" align="start">
-        <div className="max-h-56 overflow-y-auto py-1">
-          {options.map((opt) => {
-            const checked = selected.includes(opt.value);
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => toggle(opt.value)}
-                className="flex w-full items-center gap-2.5 px-3 py-1.5 text-xs hover:bg-muted transition-colors"
-              >
-                <div
-                  className={cn(
-                    "h-4 w-4 shrink-0 rounded border flex items-center justify-center",
-                    checked ? "border-primary bg-primary" : "border-border",
-                  )}
-                >
-                  {checked && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
-                </div>
-                <span className="capitalize">{opt.label}</span>
+      <PopoverContent className="w-56 p-0" align="start">
+        {searchable && (
+          <div className="flex items-center gap-2 border-b px-2 py-1.5">
+            <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search…"
+              className="flex-1 bg-transparent text-xs placeholder:text-muted-foreground focus:outline-none"
+            />
+            {q && (
+              <button type="button" onClick={() => setQ("")}>
+                <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
               </button>
-            );
-          })}
+            )}
+          </div>
+        )}
+        <div className="max-h-56 overflow-y-auto py-1">
+          {filtered.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-muted-foreground">No results.</p>
+          ) : (
+            filtered.map((opt) => {
+              const checked = selected.includes(opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => toggle(opt.value)}
+                  className="flex w-full items-center gap-2.5 px-3 py-1.5 text-xs hover:bg-muted transition-colors"
+                >
+                  <div
+                    className={cn(
+                      "h-4 w-4 shrink-0 rounded border flex items-center justify-center",
+                      checked ? "border-primary bg-primary" : "border-border",
+                    )}
+                  >
+                    {checked && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                  </div>
+                  <span className="capitalize">{opt.label}</span>
+                </button>
+              );
+            })
+          )}
         </div>
         {selected.length > 0 && (
           <div className="border-t px-3 py-2">
@@ -267,9 +316,7 @@ function VoiceItem({
       onClick={onClick}
       className={cn(
         "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-        selected
-          ? "bg-primary/10 ring-1 ring-inset ring-primary/30"
-          : "hover:bg-muted",
+        selected ? "bg-primary/10 ring-1 ring-inset ring-primary/30" : "hover:bg-muted",
       )}
     >
       <VoiceAvatar name={voice.name} />
@@ -304,6 +351,23 @@ export default function TextToSpeechPage() {
 
   // Panel state
   const [panelOpen, setPanelOpen] = useState(true);
+  const [panelWidth, setPanelWidth] = useState(340);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Drag-resize
+  useEffect(() => {
+    if (!isDragging) return;
+    function onMove(e: MouseEvent) {
+      setPanelWidth(Math.max(MIN_PANEL_W, Math.min(MAX_PANEL_W, window.innerWidth - e.clientX)));
+    }
+    function onUp() { setIsDragging(false); }
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [isDragging]);
 
   // Editor state
   const [text, setText] = useState("");
@@ -322,14 +386,23 @@ export default function TextToSpeechPage() {
   const [filterGenders, setFilterGenders] = useState<string[]>([]);
   const [filterAges, setFilterAges] = useState<string[]>([]);
 
-  const debounce = useDebouncedCallback((v: string) => {
-    setDebouncedSearch(v);
-    setPage(0);
-  }, 300);
+  const debounce = useDebouncedCallback((v: string) => { setDebouncedSearch(v); setPage(0); }, 300);
   useEffect(() => { debounce(search); }, [search, debounce]);
 
   const resetPage = useCallback(() => setPage(0), []);
   useEffect(resetPage, [filterLanguages, filterAccents, filterCategories, filterGenders, filterAges, resetPage]);
+
+  // When language changes to one without accent support, clear accent filter
+  const primaryLanguage = filterLanguages[0] ?? "";
+  useEffect(() => {
+    if (primaryLanguage && !LANGUAGE_ACCENTS[primaryLanguage]) {
+      setFilterAccents([]);
+    }
+  }, [primaryLanguage]);
+
+  const availableAccents = primaryLanguage
+    ? (LANGUAGE_ACCENTS[primaryLanguage] ?? [])
+    : ALL_ACCENTS;
 
   const filters = {
     search: debouncedSearch || undefined,
@@ -353,15 +426,10 @@ export default function TextToSpeechPage() {
     (f.tiers as readonly string[]).includes(tier),
   );
 
-  const { data: quote } = useQuery({
-    queryKey: ["quote", "tts", text],
-    queryFn: () =>
-      api.post<{ amount: number }>("/credits/quote", { operation: "tts", payload: { text } }),
-    enabled: tier === "free" && text.length > 0,
-    staleTime: 30_000,
-  });
-
-  const canAfford = tier !== "free" || !quote || !credits || credits.balance >= quote.amount;
+  // Credits vs char count
+  const charCount = text.length;
+  const creditBalance = credits?.balance ?? null;
+  const canAfford = creditBalance === null || charCount === 0 || creditBalance >= charCount;
 
   const generate = useMutation({
     mutationFn: () => {
@@ -404,6 +472,8 @@ export default function TextToSpeechPage() {
     setSearch("");
   }
 
+  const creditShortfall = creditBalance !== null && charCount > 0 && charCount > creditBalance;
+
   return (
     <div className="flex -m-6 h-[calc(100vh-56px)] overflow-hidden">
       {/* ── Left: Editor ── */}
@@ -441,26 +511,48 @@ export default function TextToSpeechPage() {
           )}
         </div>
 
-        {/* Text area */}
-        <div className="relative flex-1 flex flex-col">
+        {/* Textarea */}
+        <div className="relative flex-1 flex flex-col min-h-0">
           <textarea
-            className="flex-1 w-full resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className={cn(
+              "flex-1 w-full resize-none rounded-xl border bg-background px-4 pt-3 pb-10 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              creditShortfall ? "border-destructive/60" : "border-input",
+            )}
             placeholder="Enter the text you want to convert to speech…"
             value={text}
             onChange={(e) => setText(e.target.value)}
             maxLength={maxLen}
           />
-          <span
-            className={cn(
-              "absolute bottom-3 right-3 text-[10px] tabular-nums pointer-events-none",
-              text.length > maxLen ? "text-destructive" : "text-muted-foreground/50",
+          {/* Char count + credits bar */}
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between rounded-b-xl border-t border-inherit bg-muted/60 px-3 py-1.5 pointer-events-none">
+            <span
+              className={cn(
+                "text-xs tabular-nums font-medium",
+                charCount > maxLen
+                  ? "text-destructive"
+                  : creditShortfall
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+              )}
+            >
+              {charCount.toLocaleString()} chars
+              {charCount > maxLen && ` (max ${maxLen.toLocaleString()})`}
+            </span>
+            {creditBalance !== null && (
+              <span
+                className={cn(
+                  "text-xs tabular-nums font-medium",
+                  creditShortfall ? "text-destructive" : "text-muted-foreground",
+                )}
+              >
+                {creditShortfall && "⚠ "}
+                {creditBalance.toLocaleString()} credits
+              </span>
             )}
-          >
-            {text.length}/{maxLen}
-          </span>
+          </div>
         </div>
 
-        {/* Model + Format selects */}
+        {/* Model + Format */}
         <div className="flex gap-3">
           <div className="flex-1 space-y-1">
             <Label className="text-xs">Model</Label>
@@ -494,24 +586,17 @@ export default function TextToSpeechPage() {
           </div>
         </div>
 
-        {/* Credits + Generate */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="text-xs text-muted-foreground">
-            {tier === "free" && credits != null && (
-              <span
-                className={cn(
-                  quote && credits.balance < quote.amount ? "text-destructive" : "",
-                )}
-              >
-                {credits.balance.toLocaleString()} credits remaining
-                {quote && ` · ~${quote.amount} for this text`}
-              </span>
-            )}
-          </div>
+        {/* Generate */}
+        <div className="flex items-center justify-end gap-4">
+          {creditShortfall && (
+            <p className="text-xs text-destructive">
+              Need {(charCount - creditBalance!).toLocaleString()} more credits
+            </p>
+          )}
           <Button
             disabled={
               !text.trim() ||
-              text.length > maxLen ||
+              charCount > maxLen ||
               !selectedVoice ||
               !canAfford ||
               generate.isPending
@@ -543,9 +628,23 @@ export default function TextToSpeechPage() {
 
       {/* ── Right: Explore Panel ── */}
       {panelOpen && (
-        <div className="flex w-[340px] shrink-0 flex-col border-l bg-background">
+        <div
+          className="relative flex shrink-0 flex-col border-l bg-background"
+          style={{ width: panelWidth }}
+        >
+          {/* Drag handle */}
+          <div
+            className={cn(
+              "absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-10 group",
+              isDragging && "bg-primary/20",
+            )}
+            onMouseDown={() => setIsDragging(true)}
+          >
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-full rounded bg-border opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+
           {/* Panel header */}
-          <div className="flex items-center justify-between border-b px-4 py-3">
+          <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold">Explore</span>
               {totalCount != null && (
@@ -564,31 +663,41 @@ export default function TextToSpeechPage() {
           </div>
 
           {/* Search */}
-          <div className="border-b px-3 py-3">
-            <input
-              type="search"
-              placeholder="Search voices…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-md border border-input bg-muted/40 px-3 py-1.5 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            />
+          <div className="border-b px-3 py-2.5 shrink-0">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="search"
+                placeholder="Search voices…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-md border border-input bg-muted/40 pl-8 pr-3 py-1.5 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
           </div>
 
           {/* Filter chips */}
-          <div className="border-b px-3 py-2.5 space-y-2">
+          <div className="border-b px-3 py-2.5 space-y-2 shrink-0">
             <div className="flex flex-wrap gap-1.5">
               <FilterDropdown
                 label="Language"
                 options={LANGUAGES.map((l) => ({ value: l.code, label: l.label }))}
                 selected={filterLanguages}
                 onChange={setFilterLanguages}
+                searchable
               />
-              <FilterDropdown
-                label="Accent"
-                options={ACCENTS.map((a) => ({ value: a.toLowerCase(), label: a }))}
-                selected={filterAccents}
-                onChange={setFilterAccents}
-              />
+              {availableAccents.length > 0 && (
+                <FilterDropdown
+                  label="Accent"
+                  options={availableAccents.map((a) => ({
+                    value: a,
+                    label: a.charAt(0).toUpperCase() + a.slice(1),
+                  }))}
+                  selected={filterAccents}
+                  onChange={setFilterAccents}
+                  searchable
+                />
+              )}
               <FilterDropdown
                 label="Category"
                 options={CATEGORIES.map((c) => ({ value: c, label: c }))}
@@ -651,7 +760,7 @@ export default function TextToSpeechPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t px-3 py-2">
+          <div className="flex items-center justify-between border-t px-3 py-2 shrink-0">
             <span className="text-[10px] text-muted-foreground">
               Page {page + 1}
               {totalCount != null && ` · ${totalCount.toLocaleString()} voices`}
