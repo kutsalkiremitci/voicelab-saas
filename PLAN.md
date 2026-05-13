@@ -273,7 +273,6 @@
 
 - [x] DB: `library_voices` table (id, upstreamVoiceId, name, description, gender, age, accent, category, previewUrl, language, isActive, sortOrder)
 - [x] Migration applied
-- [ ] Seed script: curated ~20–30 voices selected from ElevenLabs shared library
 - [x] Backend service `library-voices.ts`:
   - [x] `syncFromUpstream()` — calls `client.voices.getShared()` using operator demo key, upserts curated picks
   - [x] `list({ gender?, accent?, language?, search? })` — Redis 5 min cache
