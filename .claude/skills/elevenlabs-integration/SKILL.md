@@ -1,6 +1,6 @@
 ---
 name: elevenlabs-integration
-description: Use when calling the upstream voice AI provider for cloning (IVC or PVC), text-to-speech, speech-to-speech, or reading subscription state. Per-user managed keys (paid tiers) and a shared demo key (Free tier) resolved by a service layer. Use whenever the task mentions voice clone, IVC, PVC, TTS, generate speech, voice changer, speech-to-speech, ElevenLabsClient, xi-api-key, voice_id, model selection, plan usage, voice slots, or any backend code touching api.elevenlabs.io — even if "ElevenLabs" is not explicitly named.
+description: Use when calling the upstream voice AI provider for cloning (IVC or PVC), text-to-speech, speech-to-speech, speech-to-text (transcription), audio isolation (voice isolator), shared voice library browsing, model listing, or reading subscription state. Per-user managed keys (paid tiers) and a shared demo key (Free tier) resolved by a service layer. Use whenever the task mentions voice clone, IVC, PVC, TTS, generate speech, voice changer, speech-to-speech, speech-to-text, transcription, scribe, audio isolation, voice isolator, voice library, shared voices, ElevenLabsClient, xi-api-key, voice_id, model selection, plan usage, voice slots, or any backend code touching api.elevenlabs.io — even if "ElevenLabs" is not explicitly named.
 ---
 
 # Voice AI Integration (Per-User Keys)
@@ -15,8 +15,12 @@ All upstream calls flow through one service module that resolves the right key p
 - Designing retry, error handling, or caching
 - Reading a user's subscription state (their quota / slot status)
 - Choosing a model (`eleven_multilingual_v2`, `eleven_turbo_v2_5`, `eleven_flash_v2_5`)
+- Listing available models for a TTS / S2S dropdown
 - Wiring the SDK or migrating away from the deprecated package
 - Implementing IVC (Quick Clone), PVC (Studio Clone), or Speech-to-Speech
+- Implementing **Speech-to-Text** (transcription) — Phase 13
+- Implementing **Audio Isolation** (voice isolator) — Phase 14
+- Implementing **Shared Voice Library** (default voice catalog) — Phase 12
 - Mocking the upstream provider in tests
 
 ## Red flags (resist these shortcuts)
@@ -100,6 +104,11 @@ Tier gates live in the route handler, not in this service. The service trusts th
 - `references/error-handling.md` — status code → action mapping, retry policy, SDK error wrapping
 - `references/credits-and-models.md` — model trade-offs, plan-tier characteristics, slot reasoning
 - `references/per-user-key.md` — Key encryption/decryption, lifecycle, security guarantees
+- `references/tts-settings.md` — **Phase 11** — definitive matrix for TTS/S2S knobs: model, voiceSettings (stability/similarity/style/speaker boost/speed), output format tier gates, route validation order
+- `references/shared-library.md` — **Phase 12** — `voices.getShared()`, curated catalog sync, preview audio proxy
+- `references/speech-to-text.md` — **Phase 13** — `speechToText.convert()`, transcription, scribe models, per-minute credit metering
+- `references/audio-isolation.md` — **Phase 14** — `audioIsolation.convert()`, voice isolator, streamed output, persistence pattern
+- `references/models.md` — **Phase 11 (model dropdown)** — `models.list()`, capability flags, per-user cache, validation on TTS/S2S routes
 
 ## Attribution
 

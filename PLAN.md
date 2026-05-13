@@ -238,18 +238,112 @@
 
 - [ ] `/app/voices/:id` detail page
   - [ ] Tabs: "Generate from text" | "Convert audio" (S2S)
-  - [ ] Voice settings: stability, similarity, style sliders + speaker boost
-  - [ ] Speed control (0.7–1.2)
-  - [ ] Output quality (tier-gated: standard for Basic, high for Pro, studio for Enterprise)
-  - [ ] Credit quote for Free; for Paid, show remaining monthly allowance
+  - [ ] **Text input area** (TTS tab): textarea + character counter + per-model max length validation
+  - [ ] **Audio input** (S2S tab): drag/drop OR record from mic, MIME + duration validated
+  - [ ] **Voice settings panel:**
+    - [ ] `stability` slider 0–1 (default 0.5) — low = expressive, high = monotone
+    - [ ] `similarityBoost` slider 0–1 (default 0.75) — fidelity to source voice
+    - [ ] `style` slider 0–1 (default 0) — style exaggeration (v2+ models only, disabled if `model.canUseStyle === false`)
+    - [ ] `useSpeakerBoost` toggle (default true, disabled if `model.canUseSpeakerBoost === false`)
+    - [ ] `speed` slider 0.7–1.2 (default 1.0)
+  - [ ] **Model dropdown** (TTS: `eleven_multilingual_v2`, `eleven_turbo_v2_5`, `eleven_flash_v2_5`; S2S: `eleven_multilingual_sts_v2`) — populated from `GET /models`, filtered by capability
+  - [ ] **Output format dropdown** (tier-allowed):
+    - [ ] Free / Basic → `mp3_44100_128`
+    - [ ] Pro → `mp3_44100_128`, `mp3_44100_192`
+    - [ ] Enterprise → above + `pcm_44100`
+  - [ ] Credit quote for Free; for Paid, show remaining monthly allowance (from `getSubscriptionForUser`)
   - [ ] Generate button (loading state)
-  - [ ] Inline player + download
+  - [ ] Inline player + download (filename derived from format)
+  - [ ] "Reset to defaults" button
+- [ ] Backend: `generateSpeech` + `speechToSpeech` accept `modelId`, `outputFormat`, and full `voiceSettings` (no longer hard-coded)
+- [ ] Backend: validate `modelId` against `models.list()` capability flags (TTS vs S2S; alpha access)
+- [ ] Backend: validate `outputFormat` against user's tier (route handler, before service)
+- [ ] `GET /models` route — proxies `client.models.list()`, 5 min Redis cache (per user)
 
-**Exit:** TTS and S2S flows complete with full settings UI.
+**Exit:** TTS and S2S flows complete; user picks model + output format + all voice settings + speed; backend validates per tier and per model capability. Settings documented in `.claude/skills/elevenlabs-integration/references/tts-settings.md`.
 
 ---
 
-## Phase 12 — Admin Panel
+## Phase 12 — Default Voice Library
+
+**Skills:** `backend-development`, `frontend-development`, `elevenlabs-integration`, `test-driven-development`
+**Cross-cutting docs:** `docs/system-architecture.md`
+
+> Replaces the Phase 10 stub. Required so Free users (no clones) and Paid users without clones can generate speech.
+
+- [ ] DB: `library_voices` table (id, upstreamVoiceId, name, description, gender, age, accent, category, previewUrl, language, isActive, sortOrder)
+- [ ] Migration applied
+- [ ] Seed script: curated ~20–30 voices selected from ElevenLabs shared library
+- [ ] Backend service `library-voices.ts`:
+  - [ ] `syncFromUpstream()` — calls `client.voices.getShared()` using operator demo key, upserts curated picks
+  - [ ] `list({ gender?, accent?, language?, search? })` — Redis 5 min cache
+- [ ] Routes:
+  - [ ] `GET /library/voices` (public to authed users, filters)
+  - [ ] `GET /library/voices/:id/preview` (proxies preview audio)
+  - [ ] `POST /admin/library/sync` (admin-only re-sync)
+- [ ] `voice-ai.ts.generateSpeech` accepts library voiceId directly (already does — works because upstream voiceId is global)
+- [ ] Frontend `/app/library` — real catalog
+  - [ ] **Filter chips: language, accent, category, gender, age** (all five from upstream metadata)
+  - [ ] Search box (free-text, debounced)
+  - [ ] Card per voice: avatar, name, preview play button (inline `<audio>` from `/library/voices/:id/preview` proxy)
+  - [ ] "Generate from this voice" → opens generate panel using library voice (reuses Phase 11 settings component)
+  - [ ] Free + Paid: both can use library voices
+- [ ] Frontend `/app/library/:id/generate` (or modal) — TTS form with model + speed + settings (same component as Phase 11)
+
+**Exit:** Free user can pick a library voice and generate speech without cloning. Paid users see same catalog plus their clones.
+
+---
+
+## Phase 13 — Speech to Text
+
+**Skills:** `backend-development`, `frontend-development`, `elevenlabs-integration`, `audio-recording`, `storage-adapter`, `billing-and-credits`, `test-driven-development`
+
+- [ ] DB: `transcriptions` table (id, userId, audioKey, text, language, durationSec, model, createdAt)
+- [ ] Migration applied
+- [ ] `voice-ai.ts.transcribe(userId, audioFile, { language?, model? })` — calls `client.speechToText.convert` (model `scribe_v1`)
+- [ ] Free credit quote: per minute of audio (define in `FreeCreditsService.quote`)
+- [ ] Routes:
+  - [ ] `POST /transcribe` (multipart, audio file)
+  - [ ] `GET /transcriptions` (paginated)
+  - [ ] `GET /transcriptions/:id`
+  - [ ] `DELETE /transcriptions/:id`
+- [ ] Audio stored via `StorageAdapter`, MIME validated
+- [ ] Frontend `/app/transcribe`
+  - [ ] Upload OR record (reuse Phase 10 recorder)
+  - [ ] Language dropdown (auto-detect default)
+  - [ ] Model dropdown (when more than one available)
+  - [ ] "Transcribe" button (loading state)
+  - [ ] Result text area, copy button, download `.txt`
+- [ ] Frontend `/app/transcriptions` history list with player + text view
+
+**Exit:** All tiers can upload/record audio → receive transcript. Free user is charged per minute.
+
+---
+
+## Phase 14 — Voice Isolator
+
+**Skills:** `backend-development`, `frontend-development`, `elevenlabs-integration`, `audio-recording`, `storage-adapter`, `billing-and-credits`, `test-driven-development`
+
+- [ ] DB: `isolations` table (id, userId, inputAudioKey, outputAudioKey, createdAt)
+- [ ] Migration applied
+- [ ] `voice-ai.ts.isolateVoice(userId, audioFile)` — calls `client.audioIsolation.convert`
+- [ ] Free credit quote: per minute of audio (or block to Basic+ — decide on cost)
+- [ ] Routes:
+  - [ ] `POST /isolate` (multipart)
+  - [ ] `GET /isolations` (paginated)
+  - [ ] `DELETE /isolations/:id`
+- [ ] Frontend `/app/isolate`
+  - [ ] Upload OR record
+  - [ ] "Isolate" button (loading)
+  - [ ] Before/after dual player
+  - [ ] Download clean audio
+- [ ] Frontend `/app/isolations` history
+
+**Exit:** Noisy audio in → clean speech out. History persisted.
+
+---
+
+## Phase 15 — Admin Panel
 
 **Skills:** `frontend-development`, `billing-and-credits`, `test-driven-development`
 
@@ -269,7 +363,7 @@
 
 ---
 
-## Phase 13 — Polish & Accessibility
+## Phase 16 — Polish & Accessibility
 
 **Skills:** `frontend-development`, `test-driven-development`
 
@@ -284,7 +378,7 @@
 
 ---
 
-## Phase 14 — E2E & Hardening
+## Phase 17 — E2E & Hardening
 
 **Skills:** `test-driven-development`, `backend-development`, `frontend-development`, `deployment`
 
@@ -301,7 +395,7 @@
 
 ---
 
-## Phase 15 — Deployment
+## Phase 18 — Deployment
 
 **Skills:** `deployment`, `git-workflow`, `test-driven-development`
 
@@ -321,7 +415,7 @@
 
 ---
 
-## Phase 16 — Stripe Integration (deferred)
+## Phase 19 — Stripe Integration (deferred)
 
 > Trigger: > 20 paying users OR operator time on manual provisioning > 2 hours/week.
 
@@ -339,7 +433,7 @@
 
 ---
 
-## Phase 17 — S3 Migration (deferred)
+## Phase 20 — S3 Migration (deferred)
 
 > Trigger: local disk > 50% OR > 100 active users.
 
@@ -357,18 +451,34 @@
 
 ## Backlog
 
+**Auth / Account**
 - Disposable-email blocklist (anti-abuse layer 4 from ADR-007)
 - Password reset flow
 - Email change flow
 - Social login (Google / Apple)
 - Two-factor authentication
+
+**Billing**
 - Stripe self-serve upgrade (currently operator-mediated)
-- Speech-to-Text, Sound Effects, Music, Dubbing — full feature set rollout
 - BYOK ("bring your own key") opt-in
 - Annual billing
 - TL pricing (Iyzico)
 - Coupon codes
 - Affiliate program
+
+**ElevenLabs features (deferred — not in plan)**
+- Sound Effects (`text-to-sound-effects`)
+- Voice Design (`text-to-voice`)
+- Music composition + stem separation
+- Dubbing (translate/localize audio + video)
+- Text to Dialogue (multi-character)
+- Audio Native (website embed)
+- Conversational AI Agents (phone / chat / WebSocket)
+- Forced Alignment (text-to-audio timestamps)
+- Streaming TTS / Multi-context WebSocket
+- TTS with timestamps
+
+**Workspace**
 - Workspace / team accounts
 
 ---

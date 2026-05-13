@@ -12,7 +12,7 @@
     "test": "bun test",
     "db:generate": "drizzle-kit generate --config=packages/db/drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config=packages/db/drizzle.config.ts",
-    "db:seed": "bun packages/db/src/seed.ts",
+    "db:seed": "bun --env-file=.env packages/db/src/seed.ts",
     "prepare": "simple-git-hooks"
   },
   "devDependencies": {
