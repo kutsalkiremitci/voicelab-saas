@@ -13,6 +13,17 @@ export const ALLOWED_AUDIO_MIMES = [
   "audio/x-m4a",
 ] as const;
 
+export const ALLOWED_MEDIA_MIMES = [
+  ...ALLOWED_AUDIO_MIMES,
+  "audio/flac",
+  "audio/x-flac",
+  "audio/aac",
+  "audio/opus",
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+] as const;
+
 export const MIME_TO_EXT: Record<string, string> = {
   "audio/webm": "webm",
   "audio/mpeg": "mp3",
@@ -23,6 +34,13 @@ export const MIME_TO_EXT: Record<string, string> = {
   "audio/ogg": "ogg",
   "audio/mp4": "m4a",
   "audio/x-m4a": "m4a",
+  "audio/flac": "flac",
+  "audio/x-flac": "flac",
+  "audio/aac": "aac",
+  "audio/opus": "opus",
+  "video/mp4": "mp4",
+  "video/quicktime": "mov",
+  "video/webm": "webm",
 };
 
 export const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
@@ -65,6 +83,33 @@ export async function validateAudio(input: {
     );
   }
 
+  const ext = MIME_TO_EXT[detectedMime] ?? detected.ext;
+  return { buffer: input.buffer, detectedMime, ext };
+}
+
+export async function validateMedia(input: {
+  buffer: Buffer;
+  declaredMime: string;
+  maxBytes: number;
+}): Promise<ValidatedAudio> {
+  if (input.buffer.length === 0) {
+    throw new AppError("INVALID_FILE", "Empty file", 400);
+  }
+  if (input.buffer.length > input.maxBytes) {
+    throw new AppError(
+      "AUDIO_TOO_LARGE",
+      `File too large. Max ${Math.round(input.maxBytes / (1024 * 1024))} MB`,
+      413,
+    );
+  }
+  const detected = await fileTypeFromBuffer(input.buffer);
+  if (!detected) {
+    throw new AppError("INVALID_AUDIO", "Unrecognized binary signature", 400);
+  }
+  const detectedMime = detected.mime.toLowerCase();
+  if (!ALLOWED_MEDIA_MIMES.includes(detectedMime as (typeof ALLOWED_MEDIA_MIMES)[number])) {
+    throw new AppError("INVALID_AUDIO", `Unsupported media type: ${detectedMime}`, 400);
+  }
   const ext = MIME_TO_EXT[detectedMime] ?? detected.ext;
   return { buffer: input.buffer, detectedMime, ext };
 }

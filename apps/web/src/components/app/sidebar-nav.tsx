@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import {
   AudioLines,
   CreditCard,
+  FileText,
   Folder,
   Layers,
   LayoutDashboard,
@@ -25,6 +26,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/app", labelKey: "nav.dashboard", Icon: LayoutDashboard },
   { href: "/app/text-to-speech", labelKey: "nav.textToSpeech", Icon: Volume2 },
   { href: "/app/transcribe", labelKey: "nav.speechToText", Icon: Mic },
+  { href: "/app/transcriptions", labelKey: "nav.transcriptions", Icon: FileText },
   { href: "/app/voices", labelKey: "nav.voiceClone", Icon: Layers },
   { href: "/app/recordings", labelKey: "nav.recordings", Icon: Folder },
   { href: "/app/generations", labelKey: "nav.generations", Icon: AudioLines },

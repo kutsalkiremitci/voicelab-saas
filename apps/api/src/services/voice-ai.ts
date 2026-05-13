@@ -1,8 +1,10 @@
 import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import type { ExportOptions } from "@elevenlabs/elevenlabs-js/api/types/ExportOptions";
 import { eq } from "drizzle-orm";
 import { db } from "../lib/db";
 import { redis } from "../lib/redis";
 import { users } from "@voicelab/db/schema";
+import type { TranscribedWord } from "@voicelab/db/schema";
 import { env } from "../env";
 import { decryptApiKey } from "./encryption";
 import { VoiceAIError } from "../lib/voice-ai-error";
@@ -181,6 +183,142 @@ export async function speechToSpeech(
       wrapSdkError(e);
     }
   });
+}
+
+export interface TranscribeOpts {
+  languageCode?: string;
+  tagAudioEvents?: boolean;
+  noVerbatim?: boolean;
+  keyterms?: string[];
+  diarize?: boolean;
+  numSpeakers?: number;
+  includeSubtitles?: boolean;
+  model?: "scribe_v1" | "scribe_v2";
+  additionalFormats?: ReadonlyArray<TranscriptionAdditionalFormat>;
+}
+
+export type TranscriptionAdditionalFormat = "txt" | "srt" | "segmented_json" | "docx" | "pdf" | "html";
+
+export interface TranscriptionAdditionalFormatResult {
+  requestedFormat: TranscriptionAdditionalFormat | string;
+  fileExtension: string;
+  contentType: string;
+  isBase64Encoded: boolean;
+  content: string;
+}
+
+export interface TranscribeResult {
+  languageCode: string;
+  languageProbability: number;
+  text: string;
+  words: TranscribedWord[];
+  audioDurationSecs: number;
+  additionalFormats: TranscriptionAdditionalFormatResult[];
+}
+
+const DEFAULT_TRANSCRIBE_MODEL: "scribe_v1" | "scribe_v2" = "scribe_v2";
+const ALWAYS_REQUESTED_FORMATS: ReadonlyArray<TranscriptionAdditionalFormat> = ["txt", "segmented_json"];
+
+function buildExportOptions(formats: ReadonlyArray<TranscriptionAdditionalFormat>): ExportOptions[] {
+  const unique = Array.from(new Set(formats));
+  return unique.map((format) => ({ format }) as ExportOptions);
+}
+
+export async function transcribe(
+  userId: string,
+  audio: Blob,
+  opts: TranscribeOpts = {},
+): Promise<TranscribeResult> {
+  const client = await getClientForUser(userId);
+  const model = opts.model ?? DEFAULT_TRANSCRIBE_MODEL;
+  const requested: TranscriptionAdditionalFormat[] = [...(opts.additionalFormats ?? [])];
+
+  // Upstream constraint (as of 2026-05): requesting `additional_formats` requires
+  // `diarize=true`. Force it on when the caller wants upstream-rendered exports
+  // (PDF/DOCX/HTML). Otherwise honor the user's diarize toggle.
+  const diarize = requested.length > 0 ? true : opts.diarize ?? false;
+
+  return withRetry(async () => {
+    try {
+      const result = await client.speechToText.convert({
+        file: audio,
+        modelId: model,
+        languageCode: opts.languageCode,
+        tagAudioEvents: opts.tagAudioEvents ?? false,
+        noVerbatim: opts.noVerbatim ?? false,
+        diarize,
+        numSpeakers: opts.numSpeakers,
+        keyterms: opts.keyterms && opts.keyterms.length > 0 ? opts.keyterms : undefined,
+        timestampsGranularity: "word",
+        ...(requested.length > 0
+          ? { additionalFormats: buildExportOptions(requested) }
+          : {}),
+      });
+
+      if (!result || !("text" in result) || !("words" in result)) {
+        throw new VoiceAIError("UNKNOWN_UPSTREAM_FAILURE", 500);
+      }
+
+      const rawWords = (result.words ?? []) as Array<{
+        text: string;
+        start?: number;
+        end?: number;
+        type: string;
+        speakerId?: string;
+        logprob?: number;
+      }>;
+      const words: TranscribedWord[] = rawWords.map((w) => ({
+        text: w.text,
+        start: typeof w.start === "number" ? w.start : 0,
+        end: typeof w.end === "number" ? w.end : 0,
+        type: (w.type as TranscribedWord["type"]) ?? "word",
+        speakerId: w.speakerId,
+        logprob: w.logprob,
+      }));
+
+      const additionalFormats: TranscriptionAdditionalFormatResult[] = (
+        (result as { additionalFormats?: Array<TranscriptionAdditionalFormatResult | undefined> })
+          .additionalFormats ?? []
+      ).filter((f): f is TranscriptionAdditionalFormatResult => Boolean(f));
+
+      const audioDurationSecs = (() => {
+        if (words.length === 0) return 0;
+        const last = words[words.length - 1]!;
+        return Math.max(last.end ?? 0, 0);
+      })();
+
+      return {
+        languageCode: (result as { languageCode?: string }).languageCode ?? opts.languageCode ?? "und",
+        languageProbability:
+          typeof (result as { languageProbability?: number }).languageProbability === "number"
+            ? (result as { languageProbability: number }).languageProbability
+            : 0,
+        text: (result as { text: string }).text,
+        words,
+        audioDurationSecs:
+          typeof (result as { audioDurationSecs?: number }).audioDurationSecs === "number"
+            ? (result as { audioDurationSecs: number }).audioDurationSecs
+            : audioDurationSecs,
+        additionalFormats,
+      };
+    } catch (e) {
+      wrapSdkError(e);
+    }
+  });
+}
+
+export async function fetchAdditionalFormat(
+  userId: string,
+  audio: Blob,
+  format: TranscriptionAdditionalFormat,
+  opts: Pick<TranscribeOpts, "languageCode" | "tagAudioEvents" | "noVerbatim" | "keyterms" | "diarize" | "numSpeakers" | "model"> = {},
+): Promise<TranscriptionAdditionalFormatResult | null> {
+  const result = await transcribe(userId, audio, {
+    ...opts,
+    includeSubtitles: format === "srt" ? true : false,
+    additionalFormats: [format],
+  });
+  return result.additionalFormats.find((f) => f.requestedFormat === format) ?? null;
 }
 
 export async function deleteVoice(userId: string, voiceId: string): Promise<void> {

@@ -166,6 +166,39 @@ export const libraryVoices = pgTable(
   }),
 );
 
+export const transcriptions = pgTable(
+  "transcriptions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    audioKey: text("audio_key").notNull(),
+    fileName: text("file_name").notNull(),
+    mimeType: text("mime_type").notNull(),
+    fileSizeBytes: bigint("file_size_bytes", { mode: "number" }).notNull(),
+    durationSec: numeric("duration_sec", { precision: 10, scale: 3 }).notNull(),
+    model: text("model").notNull().default("scribe_v2"),
+    language: text("language").notNull(),
+    languageProbability: numeric("language_probability", { precision: 5, scale: 4 })
+      .notNull()
+      .default("0"),
+    text: text("text").notNull(),
+    textOriginal: text("text_original").notNull(),
+    words: jsonb("words").notNull(),
+    wordsOriginal: jsonb("words_original").notNull(),
+    options: jsonb("options").notNull(),
+    creditsCharged: integer("credits_charged"),
+    additionalFormats: jsonb("additional_formats"),
+    editVersion: integer("edit_version").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    userCreatedIdx: index("transcriptions_user_id_created_at_idx").on(t.userId, t.createdAt),
+  }),
+);
+
 export const adminAuditLog = pgTable(
   "admin_audit_log",
   {
@@ -190,9 +223,14 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   recordings: many(recordings),
   voices: many(voices),
   generations: many(generations),
+  transcriptions: many(transcriptions),
   emailVerifications: many(emailVerifications),
   credits: one(credits, { fields: [users.id], references: [credits.userId] }),
   adminAuditEntries: many(adminAuditLog),
+}));
+
+export const transcriptionsRelations = relations(transcriptions, ({ one }) => ({
+  user: one(users, { fields: [transcriptions.userId], references: [users.id] }),
 }));
 
 export const recordingsRelations = relations(recordings, ({ one, many }) => ({
@@ -240,3 +278,38 @@ export type Recording = typeof recordings.$inferSelect;
 export type Voice = typeof voices.$inferSelect;
 export type Generation = typeof generations.$inferSelect;
 export type AdminAuditEntry = typeof adminAuditLog.$inferSelect;
+export type Transcription = typeof transcriptions.$inferSelect;
+export type NewTranscription = typeof transcriptions.$inferInsert;
+
+export interface TranscribedWord {
+  text: string;
+  start: number;
+  end: number;
+  type: "word" | "spacing" | "audio_event";
+  speakerId?: string;
+  logprob?: number;
+}
+
+export interface TranscribeOptions {
+  languageCode?: string;
+  tagAudioEvents: boolean;
+  noVerbatim: boolean;
+  keyterms: string[];
+  includeSubtitles: boolean;
+  diarize: boolean;
+  numSpeakers?: number;
+  model: "scribe_v1" | "scribe_v2";
+  speakerNames?: Record<string, string>;
+}
+
+export type TranscriptionExportFormat = "txt" | "srt" | "vtt" | "json" | "pdf" | "docx" | "html";
+
+export interface TranscriptionAdditionalFormatEntry {
+  value?: string;
+  storageKey?: string;
+  editVersion: number;
+}
+
+export type TranscriptionAdditionalFormats = Partial<
+  Record<TranscriptionExportFormat, TranscriptionAdditionalFormatEntry>
+>;

@@ -10,6 +10,7 @@ const LABEL_KEYS: Record<string, string> = {
   app: "nav.dashboard",
   "text-to-speech": "nav.textToSpeech",
   transcribe: "nav.speechToText",
+  transcriptions: "nav.transcriptions",
   voices: "nav.voiceClone",
   recordings: "nav.recordings",
   generations: "nav.generations",

@@ -9,9 +9,54 @@ export type MockClient = {
   };
   textToSpeech: { convert: ReturnType<typeof mock> };
   speechToSpeech: { convert: ReturnType<typeof mock> };
+  speechToText: { convert: ReturnType<typeof mock> };
   user: { subscription: { get: ReturnType<typeof mock> } };
   models: { list: ReturnType<typeof mock> };
 };
+
+export interface MockTranscribeWord {
+  text: string;
+  start: number;
+  end: number;
+  type: "word" | "spacing" | "audio_event";
+  speakerId?: string;
+  logprob?: number;
+}
+
+export interface MockTranscribeResponse {
+  languageCode: string;
+  languageProbability: number;
+  text: string;
+  words: MockTranscribeWord[];
+  audioDurationSecs: number;
+  additionalFormats: Array<{
+    requestedFormat: string;
+    fileExtension: string;
+    contentType: string;
+    isBase64Encoded: boolean;
+    content: string;
+  }>;
+}
+
+export function makeMockTranscribeResponse(
+  overrides: Partial<MockTranscribeResponse> = {},
+): MockTranscribeResponse {
+  return {
+    languageCode: "en",
+    languageProbability: 0.98,
+    text: "Mock transcription output.",
+    words: [
+      { text: "Mock", start: 0, end: 0.4, type: "word", logprob: -0.1 },
+      { text: " ", start: 0.4, end: 0.5, type: "spacing" },
+      { text: "transcription", start: 0.5, end: 1.2, type: "word", logprob: -0.05 },
+      { text: " ", start: 1.2, end: 1.3, type: "spacing" },
+      { text: "output.", start: 1.3, end: 2.0, type: "word", logprob: -0.08 },
+    ],
+    audioDurationSecs: 2.0,
+    additionalFormats: [],
+    ...overrides,
+  };
+}
 
 function makeAudioResponse(charCount: string) {
   return {
@@ -92,6 +137,71 @@ export function mockElevenLabsClient(): MockClient {
     },
     textToSpeech: { convert: tts },
     speechToSpeech: { convert: s2s },
+    speechToText: {
+      convert: mock(async (_body: { additionalFormats?: Array<{ format: string }> }) => {
+        const requested = _body?.additionalFormats ?? [];
+        return makeMockTranscribeResponse({
+          additionalFormats: requested.map((f) => {
+            const fmt = f.format;
+            if (fmt === "pdf" || fmt === "docx") {
+              return {
+                requestedFormat: fmt,
+                fileExtension: fmt,
+                contentType:
+                  fmt === "pdf"
+                    ? "application/pdf"
+                    : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                isBase64Encoded: true,
+                content: Buffer.from(`mock-${fmt}-bytes`).toString("base64"),
+              };
+            }
+            if (fmt === "html") {
+              return {
+                requestedFormat: fmt,
+                fileExtension: "html",
+                contentType: "text/html",
+                isBase64Encoded: false,
+                content: "<html><body>mock</body></html>",
+              };
+            }
+            if (fmt === "srt") {
+              return {
+                requestedFormat: fmt,
+                fileExtension: "srt",
+                contentType: "application/x-subrip",
+                isBase64Encoded: false,
+                content: "1\n00:00:00,000 --> 00:00:02,000\nMock transcription output.\n",
+              };
+            }
+            if (fmt === "txt") {
+              return {
+                requestedFormat: fmt,
+                fileExtension: "txt",
+                contentType: "text/plain",
+                isBase64Encoded: false,
+                content: "Mock transcription output.\n",
+              };
+            }
+            if (fmt === "segmented_json") {
+              return {
+                requestedFormat: fmt,
+                fileExtension: "json",
+                contentType: "application/json",
+                isBase64Encoded: false,
+                content: JSON.stringify({ segments: [] }),
+              };
+            }
+            return {
+              requestedFormat: fmt,
+              fileExtension: fmt,
+              contentType: "text/plain",
+              isBase64Encoded: false,
+              content: "",
+            };
+          }),
+        });
+      }),
+    },
     user: {
       subscription: {
         get: mock(async () => ({

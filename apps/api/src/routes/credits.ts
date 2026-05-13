@@ -11,10 +11,11 @@ import { getSubscriptionForUser } from "../services/voice-ai";
 const credits = new Hono<{ Variables: AuthVariables }>();
 
 const quoteSchema = z.object({
-  operation: z.enum(["tts", "s2s"]),
+  operation: z.enum(["tts", "s2s", "transcribe"]),
   payload: z.object({
     text: z.string().optional(),
     durationSec: z.number().nonnegative().optional(),
+    keytermsCount: z.number().int().nonnegative().optional(),
   }),
 });
 

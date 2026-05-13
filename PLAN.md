@@ -292,29 +292,65 @@
 
 ---
 
-## Phase 13 — Speech to Text
+## Phase 13 — Speech to Text (Scribe)
 
-**Skills:** `backend-development`, `frontend-development`, `elevenlabs-integration`, `audio-recording`, `storage-adapter`, `billing-and-credits`, `test-driven-development`
+**Skills:** `backend-development`, `frontend-development`, `elevenlabs-integration`, `storage-adapter`, `billing-and-credits`, `test-driven-development`
 
-- [ ] DB: `transcriptions` table (id, userId, audioKey, text, language, durationSec, model, createdAt)
+> Full-fidelity ElevenLabs Scribe parity: rich settings, dynamic per-minute credit quote, interactive segment/word timeline editor, multi-format export.
+
+**Backend**
+
+- [ ] DB: `transcriptions` table (id, userId, audioKey, fileName, fileSizeBytes, durationSec, model, language, languageProbability, text, textOriginal, words, wordsOriginal, options, creditsCharged, additionalFormats, editVersion, createdAt, updatedAt)
 - [ ] Migration applied
-- [ ] `voice-ai.ts.transcribe(userId, audioFile, { language?, model? })` — calls `client.speechToText.convert` (model `scribe_v1`)
-- [ ] Free credit quote: per minute of audio (define in `FreeCreditsService.quote`)
-- [ ] Routes:
-  - [ ] `POST /transcribe` (multipart, audio file)
-  - [ ] `GET /transcriptions` (paginated)
+- [ ] `voice-ai.ts.transcribe(userId, audio, opts)` — calls `client.speechToText.convert` with `model_id` (default `scribe_v2`), `language_code?`, `tag_audio_events`, `no_verbatim`, `keyterms[]`, `diarize`, `num_speakers?`, `timestamps_granularity: "word"`, `additional_formats[]`
+- [ ] `FreeCreditsService`: add `transcribe` op, per-minute formula (`CREDIT_PER_MINUTE_TRANSCRIBE`, default 33), +20% if keyterms present
+- [ ] Charge AFTER success using `audio_duration_secs` from upstream response
+- [ ] `apps/api/src/lib/srt-vtt.ts` — words[] → SRT, SRT → VTT helpers
+- [ ] Routes (new `routes/transcriptions.ts`):
+  - [ ] `POST /transcribe` (multipart, 1000 MB cap, MIME + magic-byte validate)
+  - [ ] `GET /transcriptions` (paginated, ownership filter)
   - [ ] `GET /transcriptions/:id`
-  - [ ] `DELETE /transcriptions/:id`
-- [ ] Audio stored via `StorageAdapter`, MIME validated
-- [ ] Frontend `/app/transcribe`
-  - [ ] Upload OR record (reuse Phase 10 recorder)
-  - [ ] Language dropdown (auto-detect default)
-  - [ ] Model dropdown (when more than one available)
-  - [ ] "Transcribe" button (loading state)
-  - [ ] Result text area, copy button, download `.txt`
-- [ ] Frontend `/app/transcriptions` history list with player + text view
+  - [ ] `PATCH /transcriptions/:id` (edited text/words/speakerNames; bumps `editVersion`)
+  - [ ] `DELETE /transcriptions/:id` (cleans audio + cached export blobs)
+  - [ ] `GET /transcriptions/:id/export?format=txt|srt|vtt|json|pdf|docx|html` (cache-hit by editVersion; re-render server-side for txt/srt/vtt/json on edit; re-fetch upstream for pdf/docx/html on edit)
+- [ ] Audio + binary exports stored via `StorageAdapter`
+- [ ] Rate limit middleware (Redis sliding window) on POST `/transcribe`
 
-**Exit:** All tiers can upload/record audio → receive transcript. Free user is charged per minute.
+**Frontend**
+
+- [ ] `/app/transcribe` — create page (replaces stub):
+  - [ ] Dropzone "Click or drag files here to upload", up to 1000 MB, client-side duration decode (AudioContext)
+  - [ ] Primary Language combobox — default "Detect", full ISO-639-1 list, localStorage persist
+  - [ ] Switches: Tag Audio events / Include subtitles / No verbatim / Identify speakers (all default OFF)
+  - [ ] Identify speakers ON → reveal "Expected speakers (1–32)" numeric input
+  - [ ] Keyword chip input (comma or Enter to commit, Backspace removes last, counter `N / 1000`, +20% hint)
+  - [ ] "Reset to defaults" ghost button
+  - [ ] Cost preview card (Free only) — calls `POST /credits/quote` with `{ operation: "transcribe", durationSec, keytermsCount }`, debounce 300 ms
+  - [ ] Submit button (XHR + progress bar) → navigate to `/app/transcribe/[id]`
+- [ ] `/app/transcribe/[id]` — viewer:
+  - [ ] Header (filename, duration, language + probability, Export ▾, Delete)
+  - [ ] Persistent audio player (top-aligned, `<audio>` controlled by store)
+  - [ ] Segmented view (default) — segments grouped on audio_event / >=400 ms spacing / 12-sec max
+  - [ ] Each segment: timecode (clickable seek), editable text (contentEditable), ▶ play-segment button
+  - [ ] Word view toggle (single chip per word, click seek, double-click edit)
+  - [ ] Active-segment / active-word highlight + auto-scroll during playback
+  - [ ] Audio events shown as italic `(laughter)` / `(music)` chips when tag_audio_events=true
+  - [ ] Speaker chips (diarize=true) — deterministic color, click to rename, propagates to all segments + exports
+  - [ ] Edit toolbar: Reset to original / Save changes / 2-sec autosave / Saved indicator
+  - [ ] Export menu (TXT, JSON, SRT, VTT, PDF, DOCX, HTML) — downloads named after original filename
+- [ ] `/app/transcriptions` — history table (filename, language, duration, words, date, View/Download/Delete)
+- [ ] Sidebar: Speech to Text + Transcriptions history links
+- [ ] i18n keys in `en.json` + `tr.json` (new `transcribe.*` + `transcriptions.*` namespaces)
+- [ ] New components: `transcribe-dropzone`, `transcribe-settings`, `keyword-chip-input`, `cost-preview`, `transcript-timeline`, `export-menu`
+- [ ] New libs: `audio-duration.ts`, `language-codes.ts`
+
+**Tests**
+
+- [ ] Unit: `quoteFreeOperation("transcribe", ...)` incl. keyterms surcharge; SRT/VTT renderer (clean + edited words); language-code validator; words→segments grouper
+- [ ] Integration: POST `/transcribe` (mock upstream), GET list, PATCH edit + `editVersion` bump, GET export cache hit/miss, DELETE cleanup
+- [ ] Mock fixtures: diarized + audio_event response, additional_formats response
+
+**Exit:** Free / Basic / Pro / Enterprise users can upload audio ≤ 1000 MB, configure all five settings, see live credit cost, transcribe, edit any word inline, rename speakers, and export TXT / JSON / SRT / VTT / PDF / DOCX / HTML reflecting their edits. Free user charged per minute (33 credits/min default, +20% if keyterms used).
 
 ---
 
@@ -463,6 +499,15 @@
 - TL pricing (Iyzico)
 - Coupon codes
 - Affiliate program
+
+**Speech-to-Text — extended (post-Phase 13)**
+- Multi-channel transcription (per-channel billing)
+- Entity / PII / PHI / PCI redaction (`entity_detection`, `entity_redaction`)
+- Audio ingestion from `cloud_storage_url` (S3/GCS/R2 link)
+- `source_url` ingestion (YouTube / TikTok / hosted video)
+- Webhook async mode for files > 30 min
+- Real-time WebSocket transcription
+- "Transcribe this recording" shortcut from `/app/recordings`
 
 **ElevenLabs features (deferred — not in plan)**
 - Sound Effects (`text-to-sound-effects`)

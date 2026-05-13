@@ -6,7 +6,7 @@
   "scripts": {
     "dev:api": "bun --cwd apps/api --env-file=../../.env --hot src/index.ts",
     "dev:web": "bun --cwd apps/web dev",
-    "dev": "bun run --parallel dev:api dev:web",
+    "dev": "bun scripts/dev.ts",
     "lint": "echo \"lint not configured yet\" && exit 0",
     "typecheck": "bun --cwd apps/api typecheck && bun --cwd packages/db typecheck && bun --cwd packages/shared typecheck && bun --cwd apps/web typecheck",
     "test": "bun test",

@@ -1,8 +1,26 @@
 import { randomUUID } from "node:crypto";
 
-export type StorageKind = "recordings" | "generations";
+export type StorageKind = "recordings" | "generations" | "transcriptions" | "transcript-exports";
 
-const ALLOWED_EXTS = new Set(["webm", "mp3", "wav", "ogg", "m4a", "mp4"]);
+const ALLOWED_EXTS = new Set([
+  "webm",
+  "mp3",
+  "wav",
+  "ogg",
+  "m4a",
+  "mp4",
+  "mov",
+  "flac",
+  "aac",
+  "opus",
+  "txt",
+  "srt",
+  "vtt",
+  "json",
+  "pdf",
+  "docx",
+  "html",
+]);
 
 export function buildKey(userId: string, kind: StorageKind, ext: string): string {
   const e = ext.toLowerCase().replace(/^\./, "");
@@ -13,7 +31,9 @@ export function buildKey(userId: string, kind: StorageKind, ext: string): string
 }
 
 export function parseKey(key: string): { userId: string; kind: StorageKind; uuid: string; ext: string } | null {
-  const m = key.match(/^audio\/([^/]+)\/(recordings|generations)\/([0-9a-f-]{36})\.([a-z0-9]+)$/i);
+  const m = key.match(
+    /^audio\/([^/]+)\/(recordings|generations|transcriptions|transcript-exports)\/([0-9a-f-]{36})\.([a-z0-9]+)$/i,
+  );
   if (!m) return null;
   return {
     userId: m[1]!,

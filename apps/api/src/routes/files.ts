@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { and, eq } from "drizzle-orm";
 import { db } from "../lib/db";
-import { recordings, generations } from "@voicelab/db/schema";
+import { recordings, generations, transcriptions } from "@voicelab/db/schema";
 import { storage } from "../services/storage";
 import { LocalAdapter } from "../services/storage/local";
 import { AppError } from "../lib/errors";
@@ -36,7 +36,15 @@ async function lookupFile(
     if (!row) throw new AppError("FILE_NOT_FOUND", "File not found", 404);
     return row;
   }
-  throw new AppError("INVALID_TYPE", "type must be recordings or generations", 400);
+  if (type === "transcriptions") {
+    const row = await db.query.transcriptions.findFirst({
+      where: and(eq(transcriptions.id, id), eq(transcriptions.userId, userId)),
+      columns: { audioKey: true, mimeType: true, fileSizeBytes: true },
+    });
+    if (!row) throw new AppError("FILE_NOT_FOUND", "File not found", 404);
+    return { storageKey: row.audioKey, mimeType: row.mimeType, sizeBytes: row.fileSizeBytes };
+  }
+  throw new AppError("INVALID_TYPE", "type must be recordings, generations or transcriptions", 400);
 }
 
 function localRangeResponse(

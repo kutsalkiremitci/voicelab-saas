@@ -4,7 +4,7 @@ import { credits } from "@voicelab/db/schema";
 import { env } from "../env";
 import { AppError } from "../lib/errors";
 
-export type FreeOperation = "tts" | "s2s";
+export type FreeOperation = "tts" | "s2s" | "transcribe";
 
 export interface FreeQuote {
   amount: number;
@@ -12,17 +12,27 @@ export interface FreeQuote {
   operation: FreeOperation;
 }
 
+export interface FreeQuotePayload {
+  text?: string;
+  durationSec?: number;
+  keytermsCount?: number;
+}
+
 export interface ChargeMetadata {
   characters?: number;
   voiceId?: string;
   generationId?: string;
+  transcriptionId?: string;
+  durationSec?: number;
   reason?: string;
   [key: string]: unknown;
 }
 
+export const KEYTERM_SURCHARGE_MULTIPLIER = 1.2;
+
 export function quoteFreeOperation(
   operation: FreeOperation,
-  payload: { text?: string; durationSec?: number },
+  payload: FreeQuotePayload,
 ): FreeQuote {
   const rate = env.CREDIT_PER_CHAR_TTS;
   if (operation === "tts") {
@@ -34,7 +44,17 @@ export function quoteFreeOperation(
     const charsApprox = Math.ceil((sec / 60) * 1000);
     return { amount: Math.ceil(charsApprox * rate), ratePerChar: rate, operation };
   }
-  throw new Error(`Free tier unsupported operation: ${operation}`);
+  if (operation === "transcribe") {
+    const sec = Math.max(payload.durationSec ?? 0, 0);
+    const perMinute = env.CREDIT_PER_MINUTE_TRANSCRIBE;
+    let amount = Math.ceil((sec / 60) * perMinute);
+    if (amount < 1 && sec > 0) amount = 1;
+    if ((payload.keytermsCount ?? 0) > 0) {
+      amount = Math.ceil(amount * KEYTERM_SURCHARGE_MULTIPLIER);
+    }
+    return { amount, ratePerChar: perMinute, operation };
+  }
+  throw new Error(`Free tier unsupported operation: ${operation as string}`);
 }
 
 export async function getFreeBalance(userId: string): Promise<number | null> {
