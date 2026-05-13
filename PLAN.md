@@ -216,17 +216,17 @@
 
 **Skills:** `frontend-development`, `audio-recording`, `billing-and-credits`, `test-driven-development`
 
-- [ ] `/app` dashboard
-  - [ ] Top cards: credits/quota, voices, generations
-  - [ ] Recent activity table
-  - [ ] **For Free user:** big "Upgrade" CTA when balance < 200 or exhausted
-- [ ] `/app/library` — VoiceLab voice catalog (default voices) for everyone
-- [ ] `/app/recordings` — recording studio (mic capture, waveform, save)
-- [ ] `/app/voices` — list of user's clones (one row per voice)
-  - [ ] "New Quick Clone" (Basic+) / "New Studio Clone" (Pro+) buttons
-  - [ ] Tier-gated: Free sees "Upgrade to clone" tooltip
-- [ ] `/app/generations` — table with filters, pagination, regenerate
-- [ ] `/app/settings` — name, password change, email change (Phase 2)
+- [x] `/app` dashboard
+  - [x] Top cards: credits/quota, voices, generations
+  - [x] Recent activity table
+  - [x] **For Free user:** big "Upgrade" CTA when balance < 200 or exhausted
+- [x] `/app/library` — VoiceLab voice catalog (default voices) for everyone (stub; default voices catalog deferred)
+- [x] `/app/recordings` — recording studio (mic capture, waveform, save)
+- [x] `/app/voices` — list of user's clones (one row per voice)
+  - [x] "New Quick Clone" (Basic+) / "New Studio Clone" (Pro+) buttons
+  - [x] Tier-gated: Free sees "Upgrade to clone" tooltip
+- [x] `/app/generations` — table with filters, pagination, regenerate (regenerate UI lands with detail page in Phase 11)
+- [x] `/app/settings` — name, password change, email change (read-only; mutations land later)
 
 **Exit:** Full clone + generate + history flow in UI.
 
