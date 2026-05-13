@@ -122,9 +122,10 @@ export const generations = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    voiceId: uuid("voice_id")
-      .notNull()
-      .references(() => voices.id, { onDelete: "cascade" }),
+    voiceId: uuid("voice_id").references(() => voices.id, { onDelete: "set null" }),
+    libraryVoiceId: uuid("library_voice_id").references(() => libraryVoices.id, {
+      onDelete: "set null",
+    }),
     text: text("text").notNull(),
     storageKey: text("storage_key").notNull(),
     mimeType: text("mime_type").notNull().default("audio/mpeg"),
@@ -137,6 +138,31 @@ export const generations = pgTable(
   (t) => ({
     userCreatedIdx: index("generations_user_id_created_at_idx").on(t.userId, t.createdAt),
     voiceCreatedIdx: index("generations_voice_id_created_at_idx").on(t.voiceId, t.createdAt),
+  }),
+);
+
+export const libraryVoices = pgTable(
+  "library_voices",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    upstreamVoiceId: text("upstream_voice_id").notNull().unique(),
+    name: text("name").notNull(),
+    description: text("description"),
+    gender: text("gender"),
+    age: text("age"),
+    accent: text("accent"),
+    category: text("category"),
+    previewUrl: text("preview_url"),
+    language: text("language"),
+    isActive: integer("is_active").notNull().default(1),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    activeIdx: index("library_voices_is_active_sort_idx").on(t.isActive, t.sortOrder),
+    languageIdx: index("library_voices_language_idx").on(t.language),
+    categoryIdx: index("library_voices_category_idx").on(t.category),
   }),
 );
 
@@ -186,6 +212,10 @@ export const voicesRelations = relations(voices, ({ one, many }) => ({
 export const generationsRelations = relations(generations, ({ one }) => ({
   user: one(users, { fields: [generations.userId], references: [users.id] }),
   voice: one(voices, { fields: [generations.voiceId], references: [voices.id] }),
+  libraryVoice: one(libraryVoices, {
+    fields: [generations.libraryVoiceId],
+    references: [libraryVoices.id],
+  }),
 }));
 
 export const emailVerificationsRelations = relations(emailVerifications, ({ one }) => ({
@@ -200,6 +230,8 @@ export const adminAuditLogRelations = relations(adminAuditLog, ({ one }) => ({
   admin: one(users, { fields: [adminAuditLog.adminId], references: [users.id] }),
 }));
 
+export type LibraryVoice = typeof libraryVoices.$inferSelect;
+export type NewLibraryVoice = typeof libraryVoices.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type EmailVerification = typeof emailVerifications.$inferSelect;

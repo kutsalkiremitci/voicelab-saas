@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   ["/app", "Dashboard"],
   ["/app/recordings", "Recordings"],
+  ["/app/library", "Library"],
   ["/app/voices", "Voices"],
   ["/app/generations", "Generations"],
   ["/app/credits", "Credits"],

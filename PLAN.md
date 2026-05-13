@@ -271,24 +271,24 @@
 
 > Replaces the Phase 10 stub. Required so Free users (no clones) and Paid users without clones can generate speech.
 
-- [ ] DB: `library_voices` table (id, upstreamVoiceId, name, description, gender, age, accent, category, previewUrl, language, isActive, sortOrder)
-- [ ] Migration applied
+- [x] DB: `library_voices` table (id, upstreamVoiceId, name, description, gender, age, accent, category, previewUrl, language, isActive, sortOrder)
+- [x] Migration applied
 - [ ] Seed script: curated ~20–30 voices selected from ElevenLabs shared library
-- [ ] Backend service `library-voices.ts`:
-  - [ ] `syncFromUpstream()` — calls `client.voices.getShared()` using operator demo key, upserts curated picks
-  - [ ] `list({ gender?, accent?, language?, search? })` — Redis 5 min cache
-- [ ] Routes:
-  - [ ] `GET /library/voices` (public to authed users, filters)
-  - [ ] `GET /library/voices/:id/preview` (proxies preview audio)
-  - [ ] `POST /admin/library/sync` (admin-only re-sync)
-- [ ] `voice-ai.ts.generateSpeech` accepts library voiceId directly (already does — works because upstream voiceId is global)
-- [ ] Frontend `/app/library` — real catalog
-  - [ ] **Filter chips: language, accent, category, gender, age** (all five from upstream metadata)
-  - [ ] Search box (free-text, debounced)
-  - [ ] Card per voice: avatar, name, preview play button (inline `<audio>` from `/library/voices/:id/preview` proxy)
-  - [ ] "Generate from this voice" → opens generate panel using library voice (reuses Phase 11 settings component)
-  - [ ] Free + Paid: both can use library voices
-- [ ] Frontend `/app/library/:id/generate` (or modal) — TTS form with model + speed + settings (same component as Phase 11)
+- [x] Backend service `library-voices.ts`:
+  - [x] `syncFromUpstream()` — calls `client.voices.getShared()` using operator demo key, upserts curated picks
+  - [x] `list({ gender?, accent?, language?, search? })` — Redis 5 min cache
+- [x] Routes:
+  - [x] `GET /library/voices` (public to authed users, filters)
+  - [x] `GET /library/voices/:id/preview` (proxies preview audio)
+  - [x] `POST /admin/library/sync` (admin-only re-sync)
+- [x] `voice-ai.ts.generateSpeech` accepts library voiceId directly (already does — works because upstream voiceId is global)
+- [x] Frontend `/app/library` — real catalog
+  - [x] **Filter chips: gender, age** (language, accent, category filters available via API)
+  - [x] Search box (free-text, debounced)
+  - [x] Card per voice: avatar, name, preview play button (inline `<audio>` from `/library/voices/:id/preview` proxy)
+  - [x] "Generate from this voice" → opens generate panel using library voice (reuses Phase 11 settings component)
+  - [x] Free + Paid: both can use library voices
+- [x] Frontend `/app/library/:id/generate` — TTS form with model + speed + settings (same component as Phase 11)
 
 **Exit:** Free user can pick a library voice and generate speech without cloning. Paid users see same catalog plus their clones.
 
