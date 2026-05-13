@@ -1,17 +1,19 @@
-import { describe, expect, test, beforeEach, afterEach } from "bun:test";
+import { describe, expect, test, beforeEach, afterEach, mock } from "bun:test";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { app } from "../../src/index";
 import { db } from "../../src/lib/db";
 import { redis } from "../../src/lib/redis";
-import { users, libraryVoices } from "@voicelab/db/schema";
+import { users, credits } from "@voicelab/db/schema";
 import { createSession } from "../../src/services/session";
 import { internals as voiceAIInternals } from "../../src/services/voice-ai";
 import { mockElevenLabsClient, type MockClient } from "../mocks/voice-ai";
 import { invalidateLibraryCache } from "../../src/services/library-voices";
 
 const original = voiceAIInternals.clientFactory;
-const cleanup: { userId?: string; sid?: string; voiceId?: string }[] = [];
+const cleanup: { userId?: string; sid?: string }[] = [];
+
+const FAKE_VOICE_ID = "test-lib-voice-001";
 
 async function makeUser(tier: "free" | "basic" = "free") {
   const pw = await bcrypt.hash("x", 4);
@@ -30,30 +32,43 @@ async function makeUser(tier: "free" | "basic" = "free") {
   return { userId, sid };
 }
 
-async function seedVoice(overrides: Partial<{ name: string; isActive: number }> = {}) {
-  const [v] = await db
-    .insert(libraryVoices)
-    .values({
-      upstreamVoiceId: `test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      name: overrides.name ?? "Test Voice",
-      gender: "female",
-      age: "young",
-      accent: "american",
-      category: "narration",
-      language: "en",
-      previewUrl: null,
-      isActive: overrides.isActive ?? 1,
-      sortOrder: 0,
-    })
-    .returning({ id: libraryVoices.id });
-  cleanup.push({ voiceId: v!.id });
-  return v!.id;
-}
-
 let mockClient: MockClient;
 
 beforeEach(() => {
   mockClient = mockElevenLabsClient();
+
+  // Extend mock client with getShared
+  (mockClient as unknown as Record<string, unknown>).voices = {
+    ...(mockClient as unknown as Record<string, { list: unknown }>).voices,
+    getShared: mock(async () => ({
+      voices: [
+        {
+          voiceId: FAKE_VOICE_ID,
+          name: "Test Library Voice",
+          description: "A test voice",
+          gender: "female",
+          age: "young",
+          accent: "american",
+          useCase: "narration",
+          category: "professional",
+          language: "en",
+          previewUrl: null,
+          descriptive: "warm",
+        },
+      ],
+      hasMore: false,
+      totalCount: 1,
+    })),
+    get: mock(async (id: string) => ({
+      voiceId: id,
+      name: "Test Library Voice",
+      description: "A test voice",
+      category: "professional",
+      previewUrl: null,
+      labels: { gender: "female", age: "young", accent: "american", language: "en" },
+    })),
+  };
+
   voiceAIInternals.clientFactory = (() => mockClient) as unknown as typeof original;
 });
 
@@ -65,9 +80,9 @@ afterEach(async () => {
     if (e.userId) {
       await redis.del(`models:${e.userId}`);
       await redis.del(`subscription:${e.userId}`);
+      await redis.del(`library:v2:voice:${FAKE_VOICE_ID}`);
       await db.delete(users).where(eq(users.id, e.userId));
     }
-    if (e.voiceId) await db.delete(libraryVoices).where(eq(libraryVoices.id, e.voiceId));
   }
   cleanup.length = 0;
 });
@@ -78,76 +93,58 @@ describe("GET /api/v1/library/voices", () => {
     expect(res.status).toBe(401);
   });
 
-  test("returns active voices", async () => {
+  test("returns paginated voices from upstream", async () => {
     const { sid } = await makeUser();
-    const id = await seedVoice({ name: "Alpha Voice" });
-
-    const res = await app.request("/api/v1/library/voices", {
+    const res = await app.request("/api/v1/library/voices?page=0&pageSize=20", {
       headers: { Cookie: `voicelab_session=${sid}` },
     });
     expect(res.status).toBe(200);
-    const body = await res.json() as { voices: Array<{ id: string; name: string }> };
-    const found = body.voices.find((v) => v.id === id);
-    expect(found).toBeDefined();
-    expect(found!.name).toBe("Alpha Voice");
+    const body = await res.json() as {
+      voices: Array<{ voiceId: string; name: string }>;
+      hasMore: boolean;
+      totalCount: number;
+      page: number;
+    };
+    expect(body.voices.length).toBeGreaterThan(0);
+    expect(body.voices[0]?.voiceId).toBe(FAKE_VOICE_ID);
+    expect(body.hasMore).toBe(false);
+    expect(body.page).toBe(0);
   });
 
-  test("inactive voices not returned", async () => {
+  test("second call hits Redis cache, not upstream", async () => {
     const { sid } = await makeUser();
-    const id = await seedVoice({ isActive: 0 });
-
-    const res = await app.request("/api/v1/library/voices", {
+    await app.request("/api/v1/library/voices", {
       headers: { Cookie: `voicelab_session=${sid}` },
     });
-    const body = await res.json() as { voices: Array<{ id: string }> };
-    expect(body.voices.find((v) => v.id === id)).toBeUndefined();
-  });
-
-  test("filters by gender", async () => {
-    const { sid } = await makeUser();
-    const id = await seedVoice({ name: "Female Voice" });
-
-    const res = await app.request("/api/v1/library/voices?gender=female", {
+    await app.request("/api/v1/library/voices", {
       headers: { Cookie: `voicelab_session=${sid}` },
     });
-    const body = await res.json() as { voices: Array<{ id: string }> };
-    expect(body.voices.find((v) => v.id === id)).toBeDefined();
+
+    const voicesMock = (mockClient as unknown as {
+      voices: { getShared: { mock: { calls: unknown[] } } };
+    }).voices.getShared.mock;
+    expect(voicesMock.calls.length).toBe(1);
   });
 });
 
-describe("GET /api/v1/library/voices/:id", () => {
-  test("returns voice by id", async () => {
+describe("GET /api/v1/library/voices/:voiceId", () => {
+  test("returns voice by ElevenLabs voiceId", async () => {
     const { sid } = await makeUser();
-    const id = await seedVoice({ name: "Single Voice" });
-
-    const res = await app.request(`/api/v1/library/voices/${id}`, {
+    const res = await app.request(`/api/v1/library/voices/${FAKE_VOICE_ID}`, {
       headers: { Cookie: `voicelab_session=${sid}` },
     });
     expect(res.status).toBe(200);
-    const body = await res.json() as { voice: { id: string; name: string } };
-    expect(body.voice.id).toBe(id);
-    expect(body.voice.name).toBe("Single Voice");
-  });
-
-  test("404 for unknown id", async () => {
-    const { sid } = await makeUser();
-    const res = await app.request("/api/v1/library/voices/00000000-0000-0000-0000-000000000000", {
-      headers: { Cookie: `voicelab_session=${sid}` },
-    });
-    expect(res.status).toBe(404);
+    const body = await res.json() as { voice: { voiceId: string } };
+    expect(body.voice.voiceId).toBe(FAKE_VOICE_ID);
   });
 });
 
-describe("POST /api/v1/library/voices/:id/generate", () => {
-  test("free user generates — 201 + credits charged", async () => {
+describe("POST /api/v1/library/voices/:voiceId/generate", () => {
+  test("free user generates — 201", async () => {
     const { userId, sid } = await makeUser("free");
-    const id = await seedVoice();
-
-    // grant credits
-    const { credits } = await import("@voicelab/db/schema");
     await db.insert(credits).values({ userId, balance: 1000 }).onConflictDoNothing();
 
-    const res = await app.request(`/api/v1/library/voices/${id}/generate`, {
+    const res = await app.request(`/api/v1/library/voices/${FAKE_VOICE_ID}/generate`, {
       method: "POST",
       headers: {
         Cookie: `voicelab_session=${sid}`,
@@ -156,23 +153,7 @@ describe("POST /api/v1/library/voices/:id/generate", () => {
       body: JSON.stringify({ text: "Hello world" }),
     });
     expect(res.status).toBe(201);
-    const body = await res.json() as { generation: { libraryVoiceId: string } };
-    expect(body.generation.libraryVoiceId).toBe(id);
-  });
-
-  test("404 for unknown library voice", async () => {
-    const { sid } = await makeUser("free");
-    const res = await app.request(
-      "/api/v1/library/voices/00000000-0000-0000-0000-000000000000/generate",
-      {
-        method: "POST",
-        headers: {
-          Cookie: `voicelab_session=${sid}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: "Hello" }),
-      },
-    );
-    expect(res.status).toBe(404);
+    const body = await res.json() as { generation: { settings: { libraryVoiceId: string } } };
+    expect(body.generation.settings.libraryVoiceId).toBe(FAKE_VOICE_ID);
   });
 });

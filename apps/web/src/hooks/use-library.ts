@@ -2,17 +2,24 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export type LibraryVoice = {
-  id: string;
-  upstreamVoiceId: string;
+  voiceId: string;
   name: string;
   description: string | null;
-  gender: string | null;
-  age: string | null;
-  accent: string | null;
-  category: string | null;
+  gender: string;
+  age: string;
+  accent: string;
+  category: string;
+  useCase: string;
   previewUrl: string | null;
   language: string | null;
-  sortOrder: number;
+};
+
+export type LibraryPage = {
+  voices: LibraryVoice[];
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+  totalCount: number | null;
 };
 
 export type LibraryFilters = {
@@ -21,6 +28,8 @@ export type LibraryFilters = {
   language?: string;
   category?: string;
   search?: string;
+  page?: number;
+  pageSize?: number;
 };
 
 export function useLibraryVoices(filters: LibraryFilters = {}) {
@@ -30,20 +39,23 @@ export function useLibraryVoices(filters: LibraryFilters = {}) {
   if (filters.language) params.set("language", filters.language);
   if (filters.category) params.set("category", filters.category);
   if (filters.search) params.set("search", filters.search);
+  if (filters.page != null) params.set("page", String(filters.page));
+  if (filters.pageSize != null) params.set("pageSize", String(filters.pageSize));
 
   const qs = params.toString();
   return useQuery({
     queryKey: ["library", "voices", filters],
-    queryFn: () =>
-      api.get<{ voices: LibraryVoice[] }>(`/library/voices${qs ? `?${qs}` : ""}`),
+    queryFn: () => api.get<LibraryPage>(`/library/voices${qs ? `?${qs}` : ""}`),
     staleTime: 5 * 60_000,
+    placeholderData: (prev) => prev,
   });
 }
 
-export function useLibraryVoice(id: string) {
+export function useLibraryVoice(voiceId: string) {
   return useQuery({
-    queryKey: ["library", "voices", id],
-    queryFn: () => api.get<{ voice: LibraryVoice }>(`/library/voices/${id}`),
-    enabled: Boolean(id),
+    queryKey: ["library", "voice", voiceId],
+    queryFn: () => api.get<{ voice: LibraryVoice }>(`/library/voices/${voiceId}`),
+    enabled: Boolean(voiceId),
+    staleTime: 5 * 60_000,
   });
 }

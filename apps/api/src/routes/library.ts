@@ -7,8 +7,8 @@ import { requireVerified } from "../middleware/verified";
 import { requireAdmin } from "../middleware/admin";
 import {
   listLibraryVoices,
-  getLibraryVoice,
-  syncFromUpstream,
+  getLibraryVoiceById,
+  invalidateLibraryCache,
 } from "../services/library-voices";
 import { generateSpeech, listModels } from "../services/voice-ai";
 import { checkOutputFormat, type Tier } from "../lib/tier-gates";
@@ -44,43 +44,45 @@ function publicGeneration(g: typeof generations.$inferSelect) {
   };
 }
 
+// List with pagination — proxies ElevenLabs shared voices
 app.get("/voices", requireAuth, requireVerified, async (c) => {
   const q = c.req.query();
-  const filters = {
+  const page = Math.max(0, parseInt(q.page ?? "0", 10) || 0);
+  const pageSize = Math.min(100, Math.max(1, parseInt(q.pageSize ?? "20", 10) || 20));
+
+  const result = await listLibraryVoices({
+    page,
+    pageSize,
     gender: q.gender,
     accent: q.accent,
     language: q.language,
     category: q.category,
     search: q.search?.slice(0, 100),
-  };
-  const voices = await listLibraryVoices(filters);
-  return c.json({ voices });
+  });
+
+  return c.json(result);
 });
 
-app.get("/voices/:id", requireAuth, requireVerified, async (c) => {
-  const { id } = c.req.param();
-  const voice = await getLibraryVoice(id);
+// Single voice by ElevenLabs voiceId
+app.get("/voices/:voiceId", requireAuth, requireVerified, async (c) => {
+  const { voiceId } = c.req.param();
+  const voice = await getLibraryVoiceById(voiceId);
   if (!voice) throw new AppError("NOT_FOUND", "Library voice not found", 404);
   return c.json({ voice });
 });
 
-app.get("/voices/:id/preview", requireAuth, requireVerified, async (c) => {
-  const { id } = c.req.param();
-  const voice = await getLibraryVoice(id);
+// Preview: redirect to upstream URL (cached by browser)
+app.get("/voices/:voiceId/preview", requireAuth, requireVerified, async (c) => {
+  const { voiceId } = c.req.param();
+  const voice = await getLibraryVoiceById(voiceId);
   if (!voice) throw new AppError("NOT_FOUND", "Library voice not found", 404);
   if (!voice.previewUrl) throw new AppError("NOT_FOUND", "No preview available", 404);
-
-  const upstream = await fetch(voice.previewUrl);
-  if (!upstream.ok) throw new AppError("UPSTREAM_ERROR", "Preview unavailable", 502);
-
-  const contentType = upstream.headers.get("content-type") ?? "audio/mpeg";
-  c.header("Content-Type", contentType);
-  c.header("Cache-Control", "public, max-age=86400");
-  return c.body(upstream.body as ReadableStream);
+  return c.redirect(voice.previewUrl, 302);
 });
 
+// Generate TTS using library voice
 app.post(
-  "/voices/:id/generate",
+  "/voices/:voiceId/generate",
   requireAuth,
   requireVerified,
   rateLimit({
@@ -91,10 +93,11 @@ app.post(
   }),
   async (c) => {
     const userId = c.get("userId");
-    const { id } = c.req.param();
+    const { voiceId } = c.req.param();
     const body = generateSchema.parse(await c.req.json());
 
-    const libVoice = await getLibraryVoice(id);
+    // Verify voice exists in ElevenLabs
+    const libVoice = await getLibraryVoiceById(voiceId);
     if (!libVoice) throw new AppError("NOT_FOUND", "Library voice not found", 404);
 
     const tier = await getUserTier(userId);
@@ -131,7 +134,7 @@ app.post(
       }
     }
 
-    const result = await generateSpeech(userId, libVoice.upstreamVoiceId, body.text, {
+    const result = await generateSpeech(userId, voiceId, body.text, {
       modelId,
       settings: body.settings,
       outputFormat,
@@ -143,12 +146,17 @@ app.post(
     const key = buildKey(userId, "generations", ext);
     await storage.put(key, audioBuffer, mime);
 
-    const settingsPayload = { modelId, outputFormat, ...(body.settings ?? {}) };
+    const settingsPayload = {
+      modelId,
+      outputFormat,
+      libraryVoiceId: voiceId,
+      libraryVoiceName: libVoice.name,
+      ...(body.settings ?? {}),
+    };
     const inserted = await db
       .insert(generations)
       .values({
         userId,
-        libraryVoiceId: libVoice.id,
         text: body.text,
         storageKey: key,
         mimeType: mime,
@@ -162,7 +170,7 @@ app.post(
 
     if (tier === "free") {
       await chargeFreeUser(userId, result.characterCount, {
-        libraryVoiceId: libVoice.id,
+        libraryVoiceId: voiceId,
         generationId: row.id,
         characters: result.characterCount,
       });
@@ -172,9 +180,10 @@ app.post(
   },
 );
 
-app.post("/admin/sync", requireAuth, requireAdmin, async (c) => {
-  const result = await syncFromUpstream();
-  return c.json(result);
+// Admin: clear Redis cache (force refresh)
+app.post("/admin/cache/invalidate", requireAuth, requireAdmin, async (c) => {
+  await invalidateLibraryCache();
+  return c.json({ ok: true });
 });
 
 export default app;

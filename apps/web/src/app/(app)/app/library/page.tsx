@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { Loader2, Play, Pause, Mic } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Pause, Play, Mic } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { useLibraryVoices, type LibraryVoice } from "@/hooks/use-library";
 
 const GENDERS = ["male", "female", "neutral"];
 const AGES = ["young", "middle aged", "old"];
+const PAGE_SIZE = 20;
 
 function PreviewButton({ voice }: { voice: LibraryVoice }) {
   const [playing, setPlaying] = useState(false);
@@ -30,7 +31,7 @@ function PreviewButton({ voice }: { voice: LibraryVoice }) {
       return;
     }
     setLoading(true);
-    const audio = new Audio(`/api/v1/library/voices/${voice.id}/preview`);
+    const audio = new Audio(`/api/v1/library/voices/${voice.voiceId}/preview`);
     audioRef.current = audio;
     audio.onended = () => setPlaying(false);
     audio.oncanplaythrough = () => {
@@ -62,7 +63,7 @@ function PreviewButton({ voice }: { voice: LibraryVoice }) {
 }
 
 function VoiceCard({ voice }: { voice: LibraryVoice }) {
-  const tags = [voice.gender, voice.age, voice.accent, voice.category].filter(Boolean);
+  const tags = [voice.gender, voice.age, voice.accent, voice.useCase].filter(Boolean);
 
   return (
     <div className="flex items-start gap-3 rounded-lg border bg-card p-4 hover:bg-muted/30 transition-colors">
@@ -97,7 +98,7 @@ function VoiceCard({ voice }: { voice: LibraryVoice }) {
       <div className="flex shrink-0 items-center gap-2">
         <PreviewButton voice={voice} />
         <Link
-          href={`/app/library/${voice.id}/generate`}
+          href={`/app/library/${voice.voiceId}/generate`}
           className={cn(buttonVariants({ size: "sm" }))}
         >
           Generate
@@ -142,28 +143,42 @@ export default function LibraryPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [gender, setGender] = useState<string | undefined>();
   const [age, setAge] = useState<string | undefined>();
+  const [page, setPage] = useState(0);
 
-  const debounce = useDebouncedCallback((v: string) => setDebouncedSearch(v), 300);
+  const debounce = useDebouncedCallback((v: string) => {
+    setDebouncedSearch(v);
+    setPage(0);
+  }, 300);
 
   useEffect(() => {
     debounce(search);
   }, [search, debounce]);
 
+  // Reset page when filters change
+  useEffect(() => { setPage(0); }, [gender, age]);
+
   const filters = {
     gender,
     age,
     search: debouncedSearch || undefined,
+    page,
+    pageSize: PAGE_SIZE,
   };
 
-  const { data, isLoading } = useLibraryVoices(filters);
+  const { data, isLoading, isFetching } = useLibraryVoices(filters);
   const voices = data?.voices ?? [];
+  const totalCount = data?.totalCount ?? null;
+  const hasMore = data?.hasMore ?? false;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Voice Library</h1>
         <p className="text-sm text-muted-foreground">
-          Pre-built voices available to all users — no cloning required.
+          Pre-built voices — no cloning required. Available to all users.
+          {totalCount != null && (
+            <span className="ml-1 text-muted-foreground/60">({totalCount.toLocaleString()} voices)</span>
+          )}
         </p>
       </div>
 
@@ -187,16 +202,53 @@ export default function LibraryPage() {
       ) : voices.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No voices found.{" "}
-          {Object.values(filters).some(Boolean)
+          {Object.values({ gender, age, search: debouncedSearch }).some(Boolean)
             ? "Try adjusting filters."
-            : "Library is empty — admin sync required."}
+            : "No voices available."}
         </p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
-          {voices.map((v) => (
-            <VoiceCard key={v.id} voice={v} />
-          ))}
-        </div>
+        <>
+          <div className={cn("grid gap-3 sm:grid-cols-1 lg:grid-cols-2", isFetching && "opacity-60 pointer-events-none")}>
+            {voices.map((v) => (
+              <VoiceCard key={v.voiceId} voice={v} />
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-xs text-muted-foreground">
+              Page {page + 1}
+              {totalCount != null && ` of ${Math.ceil(totalCount / PAGE_SIZE)}`}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={page === 0 || isFetching}
+                onClick={() => setPage((p) => p - 1)}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "gap-1",
+                  (page === 0 || isFetching) && "opacity-50 pointer-events-none",
+                )}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Prev
+              </button>
+              <button
+                type="button"
+                disabled={!hasMore || isFetching}
+                onClick={() => setPage((p) => p + 1)}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "gap-1",
+                  (!hasMore || isFetching) && "opacity-50 pointer-events-none",
+                )}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
