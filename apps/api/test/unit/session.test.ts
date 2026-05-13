@@ -1,10 +1,6 @@
-import { describe, expect, test, afterAll } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { createSession, getUserId, destroySession } from "../../src/services/session";
 import { redis } from "../../src/lib/redis";
-
-afterAll(async () => {
-  await redis.quit();
-});
 
 describe("session service", () => {
   test("create + get returns the userId", async () => {

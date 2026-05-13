@@ -33,26 +33,26 @@
 
 **Skills:** `backend-development`, `email-and-verification`, `test-driven-development`
 
-- [ ] Bun + Hono server, env validated with zod (`apps/api/src/env.ts`)
-- [ ] Pino logger
-- [ ] Drizzle setup, `packages/db/src/schema.ts`
-- [ ] Tables: `users` (with `status`, `tier`, encrypted `elevenlabsApiKey`, `elevenlabsPlan`), `credits` (Free only), `email_verifications`, `recordings`, `voices`, `generations`, `admin_audit_log`
-- [ ] Migrations generated (`drizzle-kit`)
-- [ ] Seed script: first admin from `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD`
-- [ ] Redis client + session service (sliding TTL)
-- [ ] AES-256 encryption service for API keys (`encryptApiKey`, `decryptApiKey`)
-- [ ] `EmailService` abstraction (nodemailer under the hood) + verification template
-- [ ] Middleware: `requireAuth`, `requireVerified`, `requireAdmin`
-- [ ] Routes:
-  - [ ] `POST /auth/register` (creates `unverified` user, sends verification email)
-  - [ ] `GET /auth/verify?token=...` (activates user, grants 1,000 Free credits)
-  - [ ] `POST /auth/resend-verification` (rate limited)
-  - [ ] `POST /auth/login` (rejects `unverified` / `suspended`)
-  - [ ] `POST /auth/logout`
-  - [ ] `GET /auth/me` (returns user + balance: Free → app credits, Paid → upstream remaining)
-- [ ] `GET /health` (db + redis + smtp check)
-- [ ] Global error handler, structured JSON errors
-- [ ] CORS configured
+- [x] Bun + Hono server, env validated with zod (`apps/api/src/env.ts`)
+- [x] Pino logger
+- [x] Drizzle setup, `packages/db/src/schema.ts`
+- [x] Tables: `users` (with `status`, `tier`, encrypted `elevenlabsApiKey`, `elevenlabsPlan`), `credits` (Free only), `email_verifications`, `recordings`, `voices`, `generations`, `admin_audit_log`
+- [x] Migrations generated (`drizzle-kit`)
+- [x] Seed script: first admin from `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD`
+- [x] Redis client + session service (sliding TTL)
+- [x] AES-256 encryption service for API keys (`encryptApiKey`, `decryptApiKey`)
+- [x] `EmailService` abstraction (nodemailer under the hood) + verification template
+- [x] Middleware: `requireAuth`, `requireVerified`, `requireAdmin`
+- [x] Routes:
+  - [x] `POST /auth/register` (creates `unverified` user, sends verification email)
+  - [x] `GET /auth/verify?token=...` (activates user, grants 1,000 Free credits)
+  - [x] `POST /auth/resend-verification` (rate limited)
+  - [x] `POST /auth/login` (rejects `unverified` / `suspended`)
+  - [x] `POST /auth/logout`
+  - [x] `GET /auth/me` (returns user + balance: Free → app credits, Paid → upstream remaining)
+- [x] `GET /health` (db + redis + smtp check)
+- [x] Global error handler, structured JSON errors
+- [x] CORS configured
 
 **Exit:** Register → email lands in Mailpit → click link → verified → can log in → 1,000 credits visible.
 

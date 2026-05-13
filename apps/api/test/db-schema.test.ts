@@ -1,11 +1,7 @@
-import { describe, expect, test, afterAll } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import postgres from "postgres";
 
 const sql = postgres(process.env.DATABASE_URL!);
-
-afterAll(async () => {
-  await sql.end();
-});
 
 describe("database schema", () => {
   test("all 7 tables exist", async () => {

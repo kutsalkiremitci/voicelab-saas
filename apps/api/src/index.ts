@@ -5,6 +5,7 @@ import { logger } from "./lib/logger";
 import { requestLogger } from "./middleware/logger";
 import { errorHandler } from "./middleware/error";
 import health from "./routes/health";
+import auth from "./routes/auth";
 
 const app = new Hono();
 
@@ -13,6 +14,7 @@ app.use("*", cors({ origin: env.WEB_ORIGIN, credentials: true }));
 app.onError(errorHandler);
 
 app.route("/api/v1/health", health);
+app.route("/api/v1/auth", auth);
 
 logger.info({ port: env.PORT }, "VoiceLab API starting");
 
